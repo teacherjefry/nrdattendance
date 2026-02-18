@@ -112,10 +112,11 @@
 
         <!-- ================= PRIMARY VIEW (TABLE) ================= -->
         <div id="primaryView">
-            <div id="reportCard" class="print-container bg-white rounded-none md:rounded-xl shadow-lg border border-gray-200 overflow-hidden print-border relative z-0">
+            <!-- Removed overflow-hidden here to help mobile scrolling/capturing of long lists -->
+            <div id="reportCard" class="print-container bg-white rounded-none md:rounded-xl shadow-lg border border-gray-200 print-border relative z-0">
                 <div class="bg-gray-50 border-b border-gray-200 p-4 sm:p-6 text-center relative">
-                    <!-- Logo in Report (Hidden by default unless custom logo exists) -->
-                    <img id="reportLogo" src="" class="hidden absolute left-6 top-6 h-16 w-16 object-contain">
+                    <!-- Logo Removed from Body as requested -->
+                    <!-- <img id="reportLogo" src="" class="hidden absolute left-6 top-6 h-16 w-16 object-contain"> -->
                     
                     <h2 class="text-lg sm:text-xl font-bold text-gray-800 lao-text">ສະຖິຕິການມາຂາດຂອງນັກຮຽນ ປະຖົມ ສົກ <span id="schoolYear">2025-2026</span></h2>
                     <p class="text-gray-600 mt-1 lao-text">ວັນທີ <span id="displayDate" class="font-semibold">...</span></p>
@@ -272,7 +273,7 @@
         let tableData = [];
         let teacherData = [];
         let secondaryStats = { stuTotal: 0, stuAbsent: 0, teaTotal: 0, teaAbsent: 0, remarks: '' };
-        let liveStats = { students: { total: 0, present: 0, absent: 0 } };
+        let liveStats = { students: { total: 0, present: 0, absent: 0 }, teachers: { total: 0, present: 0, absent: 0 } };
         let saveTimeout; // For debounce
 
         // --- CONSTANTS ---
@@ -416,8 +417,9 @@
                     img.onload = async function() {
                         // Maximize quality within Firestore 1MB limit
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 600; // Increased significantly for better quality
-                        const MAX_HEIGHT = 600;
+                        // BUMPED TO 1024 to allow "No Limit" feeling while respecting strict DB limits
+                        const MAX_WIDTH = 1024; 
+                        const MAX_HEIGHT = 1024;
                         let width = img.width;
                         let height = img.height;
 
@@ -431,7 +433,7 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        const base64 = canvas.toDataURL('image/png'); // Default high quality
+                        const base64 = canvas.toDataURL('image/png', 0.85); // High quality
                         
                         // UI Update
                         updateLogoUI(base64);
@@ -468,8 +470,8 @@
             document.getElementById('defaultLogoText').classList.add('hidden');
             
             // Report (Hidden by default, used in Print/Image)
-            document.getElementById('reportLogo').src = url;
-            document.getElementById('reportLogo').classList.remove('hidden');
+            // document.getElementById('reportLogo').src = url;
+            // document.getElementById('reportLogo').classList.remove('hidden');
             
             // Favicon & Apple Icon
             document.getElementById('favicon').href = url;
@@ -587,23 +589,24 @@
 
             const dateStr = formatDateShort(currentDate);
             const reportHTML = `
-ສະບາຍດີ 🙏✨
+ສະບາຍດີ / Hello 🙏✨
 ຂໍອະນຸຍາດລາຍງານຄົນຂາດປະຈຳວັນທີ ${dateStr} 📅
+Daily Attendance Report
 
-🎓 **ນັກຮຽນທັງໝົດ:** ${stuTotal} ຄົນ
-   🔴 ຂາດ: ${stuAbsent} ຄົນ
-   🟢 ມາ: ${stuPresent} ຄົນ
+🎓 **ນັກຮຽນທັງໝົດ / Total Students:** ${stuTotal} ຄົນ
+   🔴 ຂາດ / Absent: ${stuAbsent} ຄົນ
+   🟢 ມາ / Present: ${stuPresent} ຄົນ
 
-👩‍🏫 **ຄູປະຈຳ ແລະ ຄູຮັບເຊີນ:** ${teaTotal} ຄົນ
-   🔴 ຂາດ: ${teaAbsent} ຄົນ
+👩‍🏫 **ຄູປະຈຳ ແລະ ຄູຮັບເຊີນ / Teachers:** ${teaTotal} ຄົນ
+   🔴 ຂາດ / Absent: ${teaAbsent} ຄົນ
 
-📝 **ໝາຍເຫດ:**
+📝 **ໝາຍເຫດ / Remarks:**
 ${remarks || '-'}
 
-📊 **ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ:**
+📊 **ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ / Grand Total Present:**
 ✨ ${grandTotal} ຄົນ ✨
 
-ຂອບໃຈ 💖`.trim();
+ຂອບໃຈ / Thank you 💖`.trim();
             document.getElementById('secondaryReportText').innerText = reportHTML;
         }
 
@@ -623,6 +626,7 @@ ${remarks || '-'}
             const tbody = document.getElementById('attendanceTableBody');
             tbody.innerHTML = '';
             liveStats.students = { total: 0, present: 0, absent: 0 };
+            liveStats.teachers = { total: 0, present: 0, absent: 0 }; // Init Teachers
 
             tableData.forEach((row, index) => {
                 const total = parseInt(row.total) || 0;
@@ -653,6 +657,8 @@ ${remarks || '-'}
                 const total = parseInt(row.total) || 0;
                 const absent = parseInt(row.absent) || 0;
                 const present = Math.max(0, total - absent);
+                liveStats.teachers.total += total; liveStats.teachers.present += present; liveStats.teachers.absent += absent; // Track teachers
+
                 // Note: Width of first cell explicitly matches student table for alignment
                 teacherBody.innerHTML += `
                     <tr>
@@ -685,7 +691,21 @@ ${remarks || '-'}
         window.copyTextSummary = function() {
             const date = formatDate(currentDate);
             const percent = liveStats.students.total > 0 ? ((liveStats.students.present / liveStats.students.total) * 100).toFixed(1) + '%' : '0%';
-            const text = `*Neerada School Attendance*\n📅 ${date} (Primary)\n------------------\n👥 Total: ${liveStats.students.total}\n✅ Present: ${liveStats.students.present}\n❌ Absent: ${liveStats.students.absent}\n📊 Rate: ${percent}\n------------------`;
+            
+            const text = `*Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ*
+📅 Date / ວັນທີ: ${date} (Primary)
+------------------
+🎓 Students / ນັກຮຽນ:
+👥 Total / ທັງໝົດ: ${liveStats.students.total}
+✅ Present / ມາ: ${liveStats.students.present}
+❌ Absent / ຂາດ: ${liveStats.students.absent}
+📊 Rate / ເປີເຊັນ: ${percent}
+
+👩‍🏫 Teachers / ຄູອາຈານ:
+👥 Total / ທັງໝົດ: ${liveStats.teachers.total}
+✅ Present / ມາ: ${liveStats.teachers.present}
+❌ Absent / ຂາດ: ${liveStats.teachers.absent}
+------------------`;
             copyToClipboard(text);
         }
 
@@ -715,23 +735,55 @@ ${remarks || '-'}
         window.shareAsImage = function() {
             document.getElementById('loadingOverlay').classList.remove('hidden');
             const element = document.getElementById('reportCard');
-            const ghost = element.cloneNode(true);
-            ghost.style.position = 'fixed'; ghost.style.top = '-9999px'; ghost.style.left = '-9999px'; ghost.style.width = '1100px'; ghost.style.background = 'white';
             
-            // Show logo in capture if exists
+            // Create a Deep Clone
+            const ghost = element.cloneNode(true);
+            
+            // Force Styling on Ghost to ensure FULL capture on mobile (vertical scrolling)
+            ghost.style.position = 'absolute';
+            ghost.style.top = '0';
+            ghost.style.left = '-9999px';
+            ghost.style.width = '1000px'; // Wide enough for table
+            ghost.style.height = 'auto'; // Allow full expansion
+            ghost.style.overflow = 'visible'; // NO clipping
+            ghost.style.zIndex = '-100';
+            ghost.style.background = 'white';
+
+            // Ensure table inside ghost also isn't clipping
+            const ghostTableContainer = ghost.querySelector('.overflow-x-auto');
+            if(ghostTableContainer) {
+                ghostTableContainer.style.overflow = 'visible';
+                ghostTableContainer.style.height = 'auto';
+            }
+
+            // Re-add Logo to Header for Image Share if user has one
             const logoSrc = document.getElementById('appLogoDisplay').src;
             if(logoSrc && !logoSrc.includes('window.location.href')) {
-                const reportLogo = ghost.querySelector('#reportLogo');
-                if(reportLogo) {
-                    reportLogo.src = logoSrc;
-                    reportLogo.classList.remove('hidden');
+                // We create a new logo element in the ghost header since we removed the ID in HTML
+                const headerDiv = ghost.querySelector('.bg-gray-50');
+                if(headerDiv) {
+                    const img = document.createElement('img');
+                    img.src = logoSrc;
+                    img.className = "absolute left-6 top-6 h-16 w-16 object-contain";
+                    headerDiv.appendChild(img);
                 }
             }
 
             document.body.appendChild(ghost);
+
+            // Wait for render
             setTimeout(() => {
-                // ADDED: useCORS: true to support images
-                html2canvas(ghost, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
+                // Use massive windowHeight to force full render
+                const options = {
+                    scale: 2, 
+                    backgroundColor: '#ffffff', 
+                    useCORS: true,
+                    windowWidth: 1200,
+                    windowHeight: ghost.scrollHeight + 100, // Force full height capture
+                    scrollY: -window.scrollY // Reset scroll offset
+                };
+
+                html2canvas(ghost, options).then(canvas => {
                     document.body.removeChild(ghost);
                     canvas.toBlob(async blob => {
                         document.getElementById('loadingOverlay').classList.add('hidden');
@@ -743,7 +795,7 @@ ${remarks || '-'}
                         }
                     }, 'image/png');
                 });
-            }, 200);
+            }, 300);
         }
 
         function showToast(msg) {
