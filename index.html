@@ -135,17 +135,15 @@
                             </tr>
                         </thead>
                         <tbody id="attendanceTableBody" class="divide-y divide-gray-200"></tbody>
+                        
+                        <!-- Student Total Row (Injected here) -->
+                        <tbody id="studentTotalBody" class="bg-emerald-50/50 border-t-2 border-emerald-100"></tbody>
+
                         <thead class="bg-gray-100 border-t-4 border-gray-200"><tr class="text-left"><th colspan="6" class="p-2 pl-3 text-xs font-bold text-gray-600 uppercase">Teachers / <span class="lao-text font-normal">ຄູອາຈານ</span></th></tr></thead>
                         <tbody id="teacherTableBody" class="divide-y divide-gray-200 bg-gray-50/50"></tbody>
-                        <tfoot class="bg-yellow-100 font-bold text-gray-900 border-t-2 border-yellow-200">
-                            <tr class="text-center text-xs">
-                                <td colspan="2" class="p-2 border-r border-yellow-200 text-right pr-2 lao-text">ລວມນັກຮຽນ (Total)</td>
-                                <td id="sumTotal" class="p-2 border-r border-yellow-200">0</td>
-                                <td id="sumPresent" class="p-2 border-r border-yellow-200">0</td>
-                                <td id="sumAbsent" class="p-2 border-r border-yellow-200 text-red-700">0</td>
-                                <td class="p-2 text-left text-[10px] text-gray-600"><span id="percentPresent" class="font-bold">0%</span> Present</td>
-                            </tr>
-                        </tfoot>
+
+                        <!-- Teacher Total Row (Injected here) -->
+                        <tbody id="teacherTotalBody" class="bg-blue-50/50 border-t-2 border-blue-100"></tbody>
                     </table>
                 </div>
             </div>
@@ -561,7 +559,7 @@
                 secTab.className = "flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all hover:bg-gray-200 lao-text";
                 primView.classList.remove('hidden');
                 secView.classList.add('hidden');
-                primActions.classList.remove('hidden');
+                primActions.classList.add('hidden');
             } else {
                 secTab.className = "flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all bg-white shadow text-emerald-700 lao-text";
                 primTab.className = "flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all hover:bg-gray-200 lao-text";
@@ -676,12 +674,29 @@ ${remarks || '-'}
                 `;
             });
 
-            // Footer
-            document.getElementById('sumTotal').textContent = liveStats.students.total;
-            document.getElementById('sumPresent').textContent = liveStats.students.present;
-            document.getElementById('sumAbsent').textContent = liveStats.students.absent;
-            const percent = liveStats.students.total > 0 ? ((liveStats.students.present / liveStats.students.total) * 100).toFixed(1) : 0;
-            document.getElementById('percentPresent').textContent = `${percent}%`;
+            // Student Summary Row (Injected after students)
+            const percentStudents = liveStats.students.total > 0 ? ((liveStats.students.present / liveStats.students.total) * 100).toFixed(1) : 0;
+            document.getElementById('studentTotalBody').innerHTML = `
+                <tr class="bg-emerald-100 font-bold text-gray-900">
+                    <td colspan="2" class="p-2 border-r border-emerald-200 text-right pr-2 lao-text text-xs">ລວມນັກຮຽນ (Total Students)</td>
+                    <td class="p-2 border-r border-emerald-200 text-xs text-center">${liveStats.students.total}</td>
+                    <td class="p-2 border-r border-emerald-200 text-xs text-center">${liveStats.students.present}</td>
+                    <td class="p-2 border-r border-emerald-200 text-red-700 text-xs text-center">${liveStats.students.absent}</td>
+                    <td class="p-2 text-left text-[10px] text-gray-600"><span class="font-bold">${percentStudents}%</span> Present</td>
+                </tr>
+            `;
+
+            // Teacher Summary Row (Injected after teachers)
+            const percentTeachers = liveStats.teachers.total > 0 ? ((liveStats.teachers.present / liveStats.teachers.total) * 100).toFixed(1) : 0;
+            document.getElementById('teacherTotalBody').innerHTML = `
+                <tr class="bg-blue-100 font-bold text-gray-900">
+                    <td colspan="2" class="p-2 border-r border-blue-200 text-right pr-2 lao-text text-xs">ລວມຄູ (Total Teachers)</td>
+                    <td class="p-2 border-r border-blue-200 text-xs text-center">${liveStats.teachers.total}</td>
+                    <td class="p-2 border-r border-blue-200 text-xs text-center">${liveStats.teachers.present}</td>
+                    <td class="p-2 border-r border-blue-200 text-red-700 text-xs text-center">${liveStats.teachers.absent}</td>
+                    <td class="p-2 text-left text-[10px] text-gray-600"><span class="font-bold">${percentTeachers}%</span> Present</td>
+                </tr>
+            `;
         }
 
         window.copySecondaryText = function() {
@@ -743,12 +758,12 @@ ${remarks || '-'}
             // Force Styling on Ghost to ensure FULL capture on mobile (vertical scrolling)
             ghost.style.position = 'absolute';
             ghost.style.top = '0';
-            ghost.style.left = '-9999px';
-            ghost.style.width = '1024px'; // Fixed width to look like desktop
+            ghost.style.left = '0'; // Position at top-left to avoid cut-off
+            ghost.style.width = '800px'; // Fixed width to look like desktop
             ghost.style.height = 'auto'; // Allow full expansion
-            ghost.style.overflow = 'visible'; // NO clipping
-            ghost.style.zIndex = '-100';
+            ghost.style.zIndex = '-9999'; // Hide behind everything
             ghost.style.background = 'white';
+            ghost.style.transform = 'none'; // No transforms
 
             // Ensure table inside ghost also isn't clipping
             const ghostTableContainer = ghost.querySelector('.overflow-x-auto');
@@ -779,9 +794,13 @@ ${remarks || '-'}
                     scale: 2, 
                     backgroundColor: '#ffffff', 
                     useCORS: true,
-                    windowWidth: 1024, // Match ghost width
+                    width: 800, // Explicit capture width
+                    windowWidth: 800, // Match ghost width
+                    height: ghost.scrollHeight + 50, // Full height plus buffer
                     windowHeight: ghost.scrollHeight + 100, // Force full height capture
-                    scrollY: -window.scrollY // Reset scroll offset
+                    scrollY: 0, 
+                    x: 0,
+                    y: 0
                 };
 
                 html2canvas(ghost, options).then(canvas => {
@@ -796,7 +815,7 @@ ${remarks || '-'}
                         }
                     }, 'image/png');
                 });
-            }, 300);
+            }, 500); // Increased timeout slightly for better mobile rendering
         }
 
         function showToast(msg) {
