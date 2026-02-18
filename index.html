@@ -102,8 +102,8 @@
                     </button>
                     <button onclick="window.print()" class="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg transition shadow-sm">Print PDF</button>
                     <button onclick="window.shareAsImage()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition shadow-sm flex items-center justify-center gap-2">
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
-                         Share Image
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
+                          Share Image
                     </button>
                     <button onclick="window.copyTextSummary()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition shadow-sm border border-gray-300">Copy Text</button>
                 </div>
@@ -242,31 +242,22 @@
 
     <!-- FIREBASE & APP LOGIC -->
     <script type="module">
-        // Import Firebase (Modular)
+        // Import Firebase (Modular - CDN Version)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // =================================================================
-        // 🔴 PUT YOUR FIREBASE CONFIG HERE 🔴
+        // 🔴 FIREBASE CONFIG 🔴
         // =================================================================
-        // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDNpzkpMyI16hVre0h2EHUYrtx3Evk9asE",
-  authDomain: "neerada-attendance.firebaseapp.com",
-  projectId: "neerada-attendance",
-  storageBucket: "neerada-attendance.firebasestorage.app",
-  messagingSenderId: "609157341401",
-  appId: "1:609157341401:web:346129d05c4f079eb01ec8"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+        const firebaseConfig = {
+          apiKey: "AIzaSyDNpzkpMyI16hVre0h2EHUYrtx3Evk9asE",
+          authDomain: "neerada-attendance.firebaseapp.com",
+          projectId: "neerada-attendance",
+          storageBucket: "neerada-attendance.firebasestorage.app",
+          messagingSenderId: "609157341401",
+          appId: "1:609157341401:web:346129d05c4f079eb01ec8"
+        };
         // =================================================================
 
         // --- GLOBAL APP ID (For path structure) ---
@@ -301,8 +292,8 @@ const app = initializeApp(firebaseConfig);
         };
 
         const TEACHER_DEFAULTS = [
-            { id: 't_lao', name: 'Lao Teachers<br><span class="text-[10px] font-normal lao-text">ຄູລາວ</span>', total: 0, absent: 0, remarks: '' },
-            { id: 't_eng', name: 'English Teachers<br><span class="text-[10px] font-normal lao-text">ຄູພາສາອັງກິດ</span>', total: 0, absent: 0, remarks: '' }
+            { id: 't_lao', name: 'Lao Teachers (ຄູລາວ)', total: 0, absent: 0, remarks: '' },
+            { id: 't_eng', name: 'English Teachers (ຄູພາສາອັງກິດ)', total: 0, absent: 0, remarks: '' }
         ];
 
         // --- INIT FIREBASE ---
@@ -364,6 +355,56 @@ const app = initializeApp(firebaseConfig);
             } catch (e) { console.error("Save Error:", e); throw e; }
         }
 
+        // --- DATA LOADING LOGIC (Was Missing in original snippet) ---
+        async function loadDataForView() {
+            if (!db || !user) return;
+            
+            // Show loading state if needed, or just proceed
+            const data = await loadRecord(currentDate);
+            
+            if (currentDept === 'primary') {
+                // Load Primary Data
+                if (data && data.departments && data.departments['primary']) {
+                    tableData = data.departments['primary'];
+                    teacherData = data.teachers || JSON.parse(JSON.stringify(TEACHER_DEFAULTS));
+                } else {
+                    // Initialize with defaults
+                    tableData = JSON.parse(JSON.stringify(CLASS_STRUCTURE['primary']));
+                    teacherData = JSON.parse(JSON.stringify(TEACHER_DEFAULTS));
+                }
+                
+                // Sanitize Teacher Names (Fix old data with HTML tags)
+                if (teacherData && teacherData.length > 0) {
+                     teacherData.forEach(t => {
+                         if (t.name.includes('<br>')) {
+                             t.name = t.name.replace(/<[^>]*>/g, ' ').replace('Lao Teachers', 'Lao Teachers (ຄູລາວ)').replace('English Teachers', 'English Teachers (ຄູພາສາອັງກິດ)').trim();
+                         }
+                     });
+                }
+
+                renderTable();
+            } else {
+                // Load Secondary Data
+                if (data && data.departments && data.departments['secondary_stats']) {
+                    const stats = data.departments['secondary_stats'];
+                    document.getElementById('sec_stu_total').value = stats.stuTotal || 0;
+                    document.getElementById('sec_stu_absent').value = stats.stuAbsent || 0;
+                    document.getElementById('sec_tea_total').value = stats.teaTotal || 0;
+                    document.getElementById('sec_tea_absent').value = stats.teaAbsent || 0;
+                    document.getElementById('sec_remarks').value = stats.remarks || '';
+                } else {
+                    // Clear inputs
+                    document.getElementById('sec_stu_total').value = '';
+                    document.getElementById('sec_stu_absent').value = '';
+                    document.getElementById('sec_tea_total').value = '';
+                    document.getElementById('sec_tea_absent').value = '';
+                    document.getElementById('sec_remarks').value = '';
+                }
+                updateSecondaryCalc();
+            }
+        }
+
+
         // --- LOGO HANDLING (COMPRESSED) ---
         window.handleLogoUpload = function(input) {
             if (input.files && input.files[0]) {
@@ -373,10 +414,10 @@ const app = initializeApp(firebaseConfig);
                     const img = new Image();
                     img.src = e.target.result;
                     img.onload = async function() {
-                        // Compress Image to avoid Firestore 1MB limit
+                        // Maximize quality within Firestore 1MB limit
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 150; // Small size for logo/favicon
-                        const MAX_HEIGHT = 150;
+                        const MAX_WIDTH = 600; // Increased significantly for better quality
+                        const MAX_HEIGHT = 600;
                         let width = img.width;
                         let height = img.height;
 
@@ -390,7 +431,7 @@ const app = initializeApp(firebaseConfig);
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        const base64 = canvas.toDataURL('image/png', 0.8); // Compressed
+                        const base64 = canvas.toDataURL('image/png'); // Default high quality
                         
                         // UI Update
                         updateLogoUI(base64);
@@ -401,7 +442,7 @@ const app = initializeApp(firebaseConfig);
                                 const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'global');
                                 await setDoc(docRef, { logoUrl: base64 }, { merge: true });
                                 showToast("Logo Saved & Updated!");
-                            } catch(err) { console.error(err); showToast("Error saving logo"); }
+                            } catch(err) { console.error(err); showToast("Error saving logo (File too large for DB)"); }
                         }
                     }
                 }
@@ -503,9 +544,6 @@ const app = initializeApp(firebaseConfig);
             // Trigger auto-save for primary inputs
             window.autoSave(); 
         }
-
-        // ... [Rest of the functions: switchTab, renderTable, updateSecondaryCalc, formatDate, etc.] ...
-        // Re-declaring key functions for clarity/completeness in this block context
 
         window.switchTab = function(dept) {
             currentDept = dept;
@@ -615,6 +653,7 @@ ${remarks || '-'}
                 const total = parseInt(row.total) || 0;
                 const absent = parseInt(row.absent) || 0;
                 const present = Math.max(0, total - absent);
+                // Note: Width of first cell explicitly matches student table for alignment
                 teacherBody.innerHTML += `
                     <tr>
                         <td class="p-2 border-r border-gray-200 text-center text-gray-400 text-xs">-</td>
@@ -691,7 +730,8 @@ ${remarks || '-'}
 
             document.body.appendChild(ghost);
             setTimeout(() => {
-                html2canvas(ghost, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+                // ADDED: useCORS: true to support images
+                html2canvas(ghost, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
                     document.body.removeChild(ghost);
                     canvas.toBlob(async blob => {
                         document.getElementById('loadingOverlay').classList.add('hidden');
