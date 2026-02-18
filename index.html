@@ -766,15 +766,45 @@
             // 1. Create a "Ghost" Clone
             const ghost = element.cloneNode(true);
             
-            // 2. IMPORTANT: MANUALLY COPY VALUES FROM ORIGINAL TO GHOST
-            // html2canvas fails to capture 'value' of inputs, we must force it.
+            // 2. ROBUST DATA CAPTURE: Replace Inputs with Text
+            // html2canvas often fails with inputs. We will replace every input in the ghost
+            // with a standard text element containing the value.
             const originalInputs = element.querySelectorAll('input, textarea');
             const ghostInputs = ghost.querySelectorAll('input, textarea');
 
-            originalInputs.forEach((input, i) => {
-                if (ghostInputs[i]) {
-                    ghostInputs[i].value = input.value;
-                    ghostInputs[i].setAttribute('value', input.value); // Force attribute update
+            ghostInputs.forEach((ghostInput, i) => {
+                const originalInput = originalInputs[i];
+                const val = originalInput.value || '';
+                
+                const div = document.createElement('div');
+                div.textContent = val;
+                
+                // Copy classes
+                div.className = ghostInput.className;
+                
+                // Fix styles for text rendering vs input rendering
+                div.style.display = 'flex';
+                div.style.alignItems = 'center'; // Vertical align
+                
+                // Horizontal align based on class
+                if (ghostInput.classList.contains('text-center')) {
+                    div.style.justifyContent = 'center';
+                    div.style.textAlign = 'center';
+                } else if (ghostInput.classList.contains('text-right')) {
+                    div.style.justifyContent = 'flex-end';
+                    div.style.textAlign = 'right';
+                } else {
+                    div.style.justifyContent = 'flex-start';
+                    div.style.textAlign = 'left';
+                }
+                
+                // Remove background/border styles if they look weird on div, 
+                // but usually keeping them is fine if they are bg-transparent.
+                // The inputs in the code are bg-transparent usually.
+                
+                // Replace in DOM
+                if(ghostInput.parentNode) {
+                    ghostInput.parentNode.replaceChild(div, ghostInput);
                 }
             });
 
