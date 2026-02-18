@@ -587,25 +587,26 @@
             secondaryStats = { stuTotal, stuAbsent, teaTotal, teaAbsent, remarks };
 
             const dateStr = formatDateShort(currentDate);
+            const percent = stuTotal > 0 ? ((stuPresent / stuTotal) * 100).toFixed(1) + '%' : '0%';
+
+            // UPDATED PREVIEW TEXT FORMAT
             const reportHTML = `
-ສະບາຍດີ / Hello 🙏✨
-ຂໍອະນຸຍາດລາຍງານຄົນຂາດປະຈຳວັນທີ ${dateStr} 📅
-Daily Attendance Report
+Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
+📅 Date / ວັນທີ: ${dateStr} (ມັດທະຍົມ)
+------------------
+🎓 Students / ນັກຮຽນ:
+👥 Total / ທັງໝົດ: ${stuTotal}
+✅ Present / ມາ: ${stuPresent}
+❌ Absent / ຂາດ: ${stuAbsent}
+📊 Rate / ເປີເຊັນ: ${percent}
 
-🎓 **ນັກຮຽນທັງໝົດ / Total Students:** ${stuTotal} ຄົນ
-   🔴 ຂາດ / Absent: ${stuAbsent} ຄົນ
-   🟢 ມາ / Present: ${stuPresent} ຄົນ
-
-👩‍🏫 **ຄູປະຈຳ ແລະ ຄູຮັບເຊີນ / Teachers:** ${teaTotal} ຄົນ
-   🔴 ຂາດ / Absent: ${teaAbsent} ຄົນ
-
-📝 **ໝາຍເຫດ / Remarks:**
-${remarks || '-'}
-
-📊 **ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ / Grand Total Present:**
-✨ ${grandTotal} ຄົນ ✨
-
-ຂອບໃຈ / Thank you 💖`.trim();
+👩‍🏫 Teachers / ຄູອາຈານ & ຄູຮັບເຊີນ:
+👥 Total / ທັງໝົດ: ${teaTotal}
+✅ Present / ມາ: ${teaPresent}
+❌ Absent / ຂາດ: ${teaAbsent}
+📝 ໝາຍເຫດ / Remarks: ${remarks || '-'}
+📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${grandTotal}
+`.trim();
             document.getElementById('secondaryReportText').innerText = reportHTML;
         }
 
@@ -705,11 +706,24 @@ ${remarks || '-'}
         }
 
         window.copyTextSummary = function() {
-            const date = formatDate(currentDate);
+            const dateStr = formatDateShort(currentDate);
             const percent = liveStats.students.total > 0 ? ((liveStats.students.present / liveStats.students.total) * 100).toFixed(1) + '%' : '0%';
             
-            const text = `*Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ*
-📅 Date / ວັນທີ: ${date} (Primary)
+            // Gather Teacher Remarks
+            let teacherRemarks = [];
+            teacherData.forEach(t => {
+                if(t.remarks && t.remarks.trim() !== '') {
+                    // Extract name from "Lao Teachers (ຄູລາວ)" to just "Lao Teachers" or "ຄູລາວ" if preferred, keeping simple for now
+                    const shortName = t.name.split(' (')[0]; 
+                    teacherRemarks.push(`${shortName}: ${t.remarks}`);
+                }
+            });
+            const remarksStr = teacherRemarks.length > 0 ? teacherRemarks.join(', ') : '= ມາທັງໝົດ';
+
+            // UPDATED PRIMARY TEXT FORMAT
+            const text = `
+Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
+📅 Date / ວັນທີ: ${dateStr} (ປະຖົມ)
 ------------------
 🎓 Students / ນັກຮຽນ:
 👥 Total / ທັງໝົດ: ${liveStats.students.total}
@@ -721,7 +735,8 @@ ${remarks || '-'}
 👥 Total / ທັງໝົດ: ${liveStats.teachers.total}
 ✅ Present / ມາ: ${liveStats.teachers.present}
 ❌ Absent / ຂາດ: ${liveStats.teachers.absent}
-------------------`;
+📝 ໝາຍເຫດ / Remarks: ${remarksStr}
+`.trim();
             copyToClipboard(text);
         }
 
@@ -752,30 +767,34 @@ ${remarks || '-'}
             document.getElementById('loadingOverlay').classList.remove('hidden');
             const element = document.getElementById('reportCard');
             
-            // Create a Deep Clone
+            // 1. Create a "Ghost" Clone
             const ghost = element.cloneNode(true);
             
-            // Force Styling on Ghost to ensure FULL capture on mobile (vertical scrolling)
+            // 2. Style Ghost for PERFECT Capture
+            // We force it to be 800px wide (readable desktop size)
+            // We append it to the body so it can render fully
             ghost.style.position = 'absolute';
+            ghost.style.left = '0'; 
             ghost.style.top = '0';
-            ghost.style.left = '0'; // Position at top-left to avoid cut-off
-            ghost.style.width = '800px'; // Fixed width to look like desktop
-            ghost.style.height = 'auto'; // Allow full expansion
-            ghost.style.zIndex = '-9999'; // Hide behind everything
+            ghost.style.width = '800px'; 
+            ghost.style.minWidth = '800px';
+            ghost.style.height = 'auto'; 
+            ghost.style.zIndex = '-9999'; // Hide behind app
             ghost.style.background = 'white';
-            ghost.style.transform = 'none'; // No transforms
+            ghost.style.overflow = 'visible'; // Ensure no scrollbars inside
+            ghost.style.transform = 'none';
 
-            // Ensure table inside ghost also isn't clipping
+            // Ensure table container inside ghost expands fully
             const ghostTableContainer = ghost.querySelector('.overflow-x-auto');
             if(ghostTableContainer) {
                 ghostTableContainer.style.overflow = 'visible';
                 ghostTableContainer.style.height = 'auto';
+                ghostTableContainer.style.width = '100%';
             }
 
-            // Re-add Logo to Header for Image Share if user has one
+            // Re-add Logo to Header
             const logoSrc = document.getElementById('appLogoDisplay').src;
             if(logoSrc && !logoSrc.includes('window.location.href')) {
-                // We create a new logo element in the ghost header since we removed the ID in HTML
                 const headerDiv = ghost.querySelector('.bg-gray-50');
                 if(headerDiv) {
                     const img = document.createElement('img');
@@ -787,35 +806,60 @@ ${remarks || '-'}
 
             document.body.appendChild(ghost);
 
-            // Wait for render
+            // 3. Wait slightly for DOM to settle
             setTimeout(() => {
-                // Use massive windowHeight to force full render
+                const height = ghost.scrollHeight + 50; // Calculate full height
+                
                 const options = {
-                    scale: 2, 
+                    scale: 2, // High resolution
                     backgroundColor: '#ffffff', 
                     useCORS: true,
-                    width: 800, // Explicit capture width
-                    windowWidth: 800, // Match ghost width
-                    height: ghost.scrollHeight + 50, // Full height plus buffer
-                    windowHeight: ghost.scrollHeight + 100, // Force full height capture
+                    // FORCE dimensions to match the Ghost, ignoring the phone screen size
+                    width: 800, 
+                    windowWidth: 800, 
+                    height: height, 
+                    windowHeight: height,
                     scrollY: 0, 
                     x: 0,
                     y: 0
                 };
 
                 html2canvas(ghost, options).then(canvas => {
-                    document.body.removeChild(ghost);
+                    document.body.removeChild(ghost); // Clean up
                     canvas.toBlob(async blob => {
                         document.getElementById('loadingOverlay').classList.add('hidden');
+                        if (!blob) { showToast("Error generating image"); return; }
+                        
                         const file = new File([blob], `attendance-${currentDate}.png`, { type: 'image/png' });
+                        
+                        // Try Native Share (Mobile)
                         if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                            try { await navigator.share({ files: [file] }); showToast("Shared successfully!"); } catch (err) {}
+                            try { 
+                                await navigator.share({ files: [file] }); 
+                                showToast("Shared successfully!"); 
+                            } catch (err) {
+                                // User cancelled or failed -> Fallback to download
+                                const link = document.createElement('a'); 
+                                link.download = `attendance-${currentDate}.png`; 
+                                link.href = canvas.toDataURL(); 
+                                link.click(); 
+                            }
                         } else {
-                            const link = document.createElement('a'); link.download = `attendance-${currentDate}.png`; link.href = canvas.toDataURL(); link.click(); showToast("Image downloaded!");
+                            // Desktop Fallback
+                            const link = document.createElement('a'); 
+                            link.download = `attendance-${currentDate}.png`; 
+                            link.href = canvas.toDataURL(); 
+                            link.click(); 
+                            showToast("Image downloaded!");
                         }
                     }, 'image/png');
+                }).catch(err => {
+                    console.error(err);
+                    document.body.removeChild(ghost);
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                    showToast("Error capturing image");
                 });
-            }, 500); // Increased timeout slightly for better mobile rendering
+            }, 500);
         }
 
         function showToast(msg) {
