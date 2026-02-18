@@ -589,9 +589,8 @@
             const dateStr = formatDateShort(currentDate);
             const percent = stuTotal > 0 ? ((stuPresent / stuTotal) * 100).toFixed(1) + '%' : '0%';
 
-            // UPDATED PREVIEW TEXT FORMAT
-            const reportHTML = `
-Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
+            // UPDATED PREVIEW TEXT FORMAT - SECONDARY
+            const reportHTML = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
 📅 Date / ວັນທີ: ${dateStr} (ມັດທະຍົມ)
 ------------------
 🎓 Students / ນັກຮຽນ:
@@ -605,8 +604,7 @@ Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
 ✅ Present / ມາ: ${teaPresent}
 ❌ Absent / ຂາດ: ${teaAbsent}
 📝 ໝາຍເຫດ / Remarks: ${remarks || '-'}
-📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${grandTotal}
-`.trim();
+📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${grandTotal}`;
             document.getElementById('secondaryReportText').innerText = reportHTML;
         }
 
@@ -714,15 +712,14 @@ Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
             teacherData.forEach(t => {
                 if(t.remarks && t.remarks.trim() !== '') {
                     // Extract name from "Lao Teachers (ຄູລາວ)" to just "Lao Teachers" or "ຄູລາວ" if preferred, keeping simple for now
-                    const shortName = t.name.split(' (')[0]; 
+                    const shortName = t.name.replace(/<[^>]*>/g, '').split(' (')[0]; 
                     teacherRemarks.push(`${shortName}: ${t.remarks}`);
                 }
             });
             const remarksStr = teacherRemarks.length > 0 ? teacherRemarks.join(', ') : '= ມາທັງໝົດ';
 
             // UPDATED PRIMARY TEXT FORMAT
-            const text = `
-Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
+            const text = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
 📅 Date / ວັນທີ: ${dateStr} (ປະຖົມ)
 ------------------
 🎓 Students / ນັກຮຽນ:
@@ -735,8 +732,7 @@ Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
 👥 Total / ທັງໝົດ: ${liveStats.teachers.total}
 ✅ Present / ມາ: ${liveStats.teachers.present}
 ❌ Absent / ຂາດ: ${liveStats.teachers.absent}
-📝 ໝາຍເຫດ / Remarks: ${remarksStr}
-`.trim();
+📝 ໝາຍເຫດ / Remarks: ${remarksStr}`;
             copyToClipboard(text);
         }
 
@@ -770,9 +766,19 @@ Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
             // 1. Create a "Ghost" Clone
             const ghost = element.cloneNode(true);
             
-            // 2. Style Ghost for PERFECT Capture
-            // We force it to be 800px wide (readable desktop size)
-            // We append it to the body so it can render fully
+            // 2. IMPORTANT: MANUALLY COPY VALUES FROM ORIGINAL TO GHOST
+            // html2canvas fails to capture 'value' of inputs, we must force it.
+            const originalInputs = element.querySelectorAll('input, textarea');
+            const ghostInputs = ghost.querySelectorAll('input, textarea');
+
+            originalInputs.forEach((input, i) => {
+                if (ghostInputs[i]) {
+                    ghostInputs[i].value = input.value;
+                    ghostInputs[i].setAttribute('value', input.value); // Force attribute update
+                }
+            });
+
+            // 3. Style Ghost for PERFECT Capture
             ghost.style.position = 'absolute';
             ghost.style.left = '0'; 
             ghost.style.top = '0';
@@ -806,7 +812,7 @@ Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
 
             document.body.appendChild(ghost);
 
-            // 3. Wait slightly for DOM to settle
+            // 4. Wait slightly for DOM to settle
             setTimeout(() => {
                 const height = ghost.scrollHeight + 50; // Calculate full height
                 
