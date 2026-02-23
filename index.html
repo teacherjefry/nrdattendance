@@ -1,1056 +1,891 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neerada Sibounhueang School Attendance</title>
-    
-    <!-- Dynamic Favicons (Updated by JS) -->
-    <link rel="icon" type="image/png" id="favicon">
-    <link rel="apple-touch-icon" id="appleTouchIcon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neerada Sibounhueang School Attendance</title>
+    
+    <!-- Dynamic Favicons (Updated by JS) -->
+    <link rel="icon" type="image/png" id="favicon">
+    <link rel="apple-touch-icon" id="appleTouchIcon">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', 'Noto Sans Lao', sans-serif; }
-        .lao-text { font-family: 'Noto Sans Lao', sans-serif; }
-        
-        input:read-only, textarea:read-only {
-            color: #059669;
-            font-weight: bold;
-            background-color: #f0fdf4;
-            cursor: not-allowed;
-            border-color: #86efac;
-        }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', 'Noto Sans Lao', sans-serif; }
+        .lao-text { font-family: 'Noto Sans Lao', sans-serif; }
+        
+        input:read-only, textarea:read-only {
+            color: #059669;
+            font-weight: bold;
+            background-color: #f0fdf4;
+            cursor: not-allowed;
+            border-color: #86efac;
+        }
 
-        /* Logo Upload Hover Effect */
-        .logo-container:hover .upload-overlay { opacity: 1; }
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
 
-        /* Print Styles */
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; -webkit-print-color-adjust: exact; margin: 0; padding: 0; }
-            .print-container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: none !important; }
-            input { border: none !important; background: transparent !important; }
-        }
-    </style>
+        /* Logo Upload Hover Effect */
+        .logo-container:hover .upload-overlay { opacity: 1; }
+
+        /* Print Styles */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; -webkit-print-color-adjust: exact; margin: 0; padding: 0; }
+            .print-container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: none !important; }
+            input { border: none !important; background: transparent !important; }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen text-slate-800 flex flex-col transition-all duration-300">
-
-    <!-- Navbar -->
-    <nav class="bg-emerald-700 text-white shadow-lg no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <!-- Logo Upload Area -->
-                    <div class="relative logo-container cursor-pointer group" onclick="document.getElementById('logoInput').click()">
-                        <div class="bg-white text-emerald-700 p-1 rounded-lg font-bold text-xl h-10 w-10 flex items-center justify-center overflow-hidden border-2 border-transparent group-hover:border-white transition-all">
-                            <img id="appLogoDisplay" src="" alt="NSS" class="w-full h-full object-contain hidden">
-                            <span id="defaultLogoText">NSS</span>
-                        </div>
-                        <!-- Upload Overlay -->
-                        <div class="upload-overlay absolute inset-0 bg-black/50 rounded-lg opacity-0 transition-opacity flex items-center justify-center text-[8px] text-white font-bold pointer-events-none">
-                            UPLOAD
-                        </div>
-                        <input type="file" id="logoInput" accept="image/*" class="hidden" onchange="window.handleLogoUpload(this)">
-                    </div>
-
-                    <div>
-                        <h1 class="font-bold text-lg leading-tight">Neerada School</h1>
-                        <p class="text-xs text-emerald-100 opacity-90 lao-text">ໂຮງຮຽນ ນີຣະດາ ສີບຸນເຮືອງ</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <span id="connectionStatus" class="text-xs bg-yellow-600 px-2 py-1 rounded-full flex items-center gap-1 transition-colors">
-                        <div class="w-2 h-2 bg-yellow-200 rounded-full animate-pulse"></div>
-                        Connecting...
-                    </span>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <!-- w-full for mobile, max-w-7xl for laptop/desktop optimization -->
-    <main class="w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-8 flex-grow">
-        
-        <!-- Controls -->
-        <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-6 border border-gray-200 no-print">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                <!-- Date -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Date (Mon-Fri) / ວັນທີ</label>
-                    <input type="date" id="dateSelector" class="w-full border-gray-300 border rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 outline-none">
-                </div>
-                
-                <!-- Department Tabs -->
-                <div class="lg:col-span-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Department / ພາກວິຊາ</label>
-                    <div class="flex flex-wrap gap-2 sm:gap-0 bg-gray-100 p-1 rounded-lg">
-                        <button onclick="window.switchTab('kindergarten')" id="tab-kindergarten" class="flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all hover:bg-gray-200 text-gray-700 lao-text">Kindergarten<br><span class="text-[10px] sm:text-xs">ອະນຸບານ</span></button>
-                        <button onclick="window.switchTab('primary')" id="tab-primary" class="flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all bg-white shadow text-emerald-700 lao-text">Primary<br><span class="text-[10px] sm:text-xs">ປະຖົມ</span></button>
-                        <button onclick="window.switchTab('secondary')" id="tab-secondary" class="flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all hover:bg-gray-200 text-gray-700 lao-text">Secondary<br><span class="text-[10px] sm:text-xs">ມັດທະຍົມ</span></button>
-                    </div>
-                </div>
-
-                <!-- Primary Actions -->
-                <div id="primaryActions" class="md:col-span-2 lg:col-span-4 flex flex-col sm:flex-row gap-2 mt-2">
-                    <!-- Manual Save Button -->
-                    <button onclick="window.saveCurrentData(true)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-lg transition shadow-sm flex items-center justify-center gap-2 opacity-80 hover:opacity-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6a1 1 0 10-2 0v5.586l-1.293-1.293z" /><path d="M5 18a2 2 0 002 2h6a2 2 0 002-2V8l-3.5-3.5H7a2 2 0 00-2 2v10z" /></svg>
-                        Save Data
-                    </button>
-                    <button onclick="window.print()" class="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg transition shadow-sm">Print PDF</button>
-                    <button onclick="window.captureImage()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition shadow-sm flex items-center justify-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
-                          Capture Image
-                    </button>
-                    <button onclick="window.copyTextSummary()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition shadow-sm border border-gray-300">Copy Text</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= PRIMARY VIEW (TABLE) ================= -->
-        <div id="primaryView">
-            <!-- Removed overflow-hidden here to help mobile scrolling/capturing of long lists -->
-            <div id="reportCard" class="print-container bg-white rounded-none md:rounded-xl shadow-lg border border-gray-200 print-border relative z-0">
-                <div class="bg-gray-50 border-b border-gray-200 p-4 sm:p-6 text-center relative">
-                    <!-- Logo Removed from Body as requested -->
-                    <!-- <img id="reportLogo" src="" class="hidden absolute left-6 top-6 h-16 w-16 object-contain"> -->
-                    
-                    <h2 class="text-lg sm:text-xl font-bold text-gray-800 lao-text">ສະຖິຕິການມາຂາດຂອງນັກຮຽນ ປະຖົມ ສົກ <span id="schoolYear">2025-2026</span></h2>
-                    <p class="text-gray-600 mt-1 lao-text">ວັນທີ <span id="displayDate" class="font-semibold">...</span></p>
-                </div>
-                <div class="overflow-x-auto">
-                    <!-- Added min-w-[800px] to force horizontal scrolling on mobile -->
-                    <table class="w-full min-w-[800px] text-sm text-left">
-                        <thead>
-                            <tr class="bg-emerald-100 text-emerald-900 border-b border-emerald-200 text-center">
-                                <th class="p-2 w-10 border-r border-emerald-200 text-xs">No.<br><span class="text-[10px] lao-text">ລ/ດ</span></th>
-                                <th class="p-2 w-32 border-r border-emerald-200 text-xs">Class/Name<br><span class="text-[10px] lao-text">ຫ້ອງ/ຊື່</span></th>
-                                <th class="p-2 w-20 border-r border-emerald-200 bg-emerald-50 text-xs">Total<br><span class="text-[10px] lao-text">ເດີມ</span></th>
-                                <th class="p-2 w-20 border-r border-emerald-200 text-xs">Pres<br><span class="text-[10px] lao-text">ມາ</span></th>
-                                <th class="p-2 w-20 border-r border-emerald-200 text-red-700 bg-red-50 text-xs">Abs<br><span class="text-[10px] lao-text">ຂາດ</span></th>
-                                <th class="p-2 text-left text-xs">Rmks<br><span class="text-[10px] lao-text">ໝາຍເຫດ</span></th>
-                            </tr>
-                        </thead>
-                        <tbody id="attendanceTableBody" class="divide-y divide-gray-200"></tbody>
-                        
-                        <!-- Student Total Row (Injected here) -->
-                        <tbody id="studentTotalBody" class="bg-emerald-50/50 border-t-2 border-emerald-100"></tbody>
-
-                        <thead class="bg-gray-100 border-t-4 border-gray-200"><tr class="text-left"><th colspan="6" class="p-2 pl-3 text-xs font-bold text-gray-600 uppercase">Teachers / <span class="lao-text font-normal">ຄູອາຈານ</span></th></tr></thead>
-                        <tbody id="teacherTableBody" class="divide-y divide-gray-200 bg-gray-50/50"></tbody>
-
-                        <!-- Teacher Total Row (Injected here) -->
-                        <tbody id="teacherTotalBody" class="bg-blue-50/50 border-t-2 border-blue-100"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= KINDERGARTEN VIEW (FORM ONLY) ================= -->
-        <div id="kindergartenView" class="hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                <!-- INPUT FORM -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="bg-blue-100 text-blue-700 p-1.5 rounded-lg text-sm">Input</span>
-                        <span class="lao-text">ປ້ອນຂໍ້ມູນ ອະນຸບານ</span>
-                    </h3>
-                    
-                    <div class="space-y-6">
-                        <!-- Student Section -->
-                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                            <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Students / <span class="lao-text font-normal">ນັກຮຽນ</span></label>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-xs text-gray-500 mb-1 font-semibold">Total / ທັງໝົດ</label>
-                                    <input type="number" id="kin_stu_total" placeholder="0" class="w-full border border-gray-300 rounded-lg p-3 text-lg font-bold focus:ring-2 focus:ring-blue-500 outline-none transition" oninput="window.autoSave()">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-red-500 mb-1 font-semibold">Absent / ຂາດ</label>
-                                    <input type="number" id="kin_stu_absent" placeholder="0" class="w-full border border-red-300 bg-red-50 rounded-lg p-3 text-lg font-bold text-red-700 focus:ring-2 focus:ring-red-500 outline-none transition" oninput="window.autoSave()">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-emerald-600 mb-1 font-semibold">Present / ມາ</label>
-                                    <input type="number" id="kin_stu_present" placeholder="0" readonly class="w-full border border-emerald-300 bg-emerald-50 rounded-lg p-3 text-lg font-bold text-emerald-700 outline-none">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Teacher Section -->
-                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                            <label class="block text-sm font-bold text-blue-800 mb-3 uppercase tracking-wide">Teachers / <span class="lao-text font-normal">ຄູອາຈານ</span></label>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-xs text-blue-600 mb-1 font-semibold">Total / ທັງໝົດ</label>
-                                    <input type="number" id="kin_tea_total" placeholder="0" class="w-full border border-blue-300 rounded-lg p-3 text-lg font-bold focus:ring-2 focus:ring-blue-500 outline-none transition" oninput="window.autoSave()">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-red-500 mb-1 font-semibold">Absent / ຂາດ</label>
-                                    <input type="number" id="kin_tea_absent" placeholder="0" class="w-full border border-red-300 bg-red-50 rounded-lg p-3 text-lg font-bold text-red-700 focus:ring-2 focus:ring-red-500 outline-none transition" oninput="window.autoSave()">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-emerald-600 mb-1 font-semibold">Present / ມາ</label>
-                                    <input type="number" id="kin_tea_present" placeholder="0" readonly class="w-full border border-emerald-300 bg-emerald-50 rounded-lg p-3 text-lg font-bold text-emerald-700 outline-none">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Remarks Section -->
-                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-                            <label class="block text-sm font-bold text-yellow-800 mb-2 uppercase tracking-wide">Remarks / <span class="lao-text font-normal">ໝາຍເຫດ</span></label>
-                            <textarea id="kin_remarks" rows="2" class="w-full border border-yellow-300 bg-white rounded-lg p-3 text-sm focus:ring-2 focus:ring-yellow-500 outline-none transition lao-text" placeholder="Write who is absent and why... (ຂຽນໝາຍເຫດ)" oninput="window.autoSave()"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PREVIEW & COPY -->
-                <div class="flex flex-col h-full">
-                    <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 flex-1 flex flex-col">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <span class="bg-green-100 text-green-700 p-1.5 rounded-lg text-sm">Preview</span>
-                            <span class="lao-text">ຕົວຢ່າງລາຍງານ ອະນຸບານ</span>
-                        </h3>
-                        
-                        <!-- The Text Box -->
-                        <div id="kindergartenReportText" class="flex-1 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 lao-text text-base leading-relaxed text-gray-800 font-medium whitespace-pre-wrap font-sans">
-                            <!-- JS fills this -->
-                        </div>
-
-                        <!-- Copy Button -->
-                        <button onclick="window.copyKindergartenText()" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg shadow-md transition flex items-center justify-center gap-2 text-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                            Copy for WhatsApp
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= SECONDARY VIEW (FORM ONLY) ================= -->
-        <div id="secondaryView" class="hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                <!-- INPUT FORM -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="bg-blue-100 text-blue-700 p-1.5 rounded-lg text-sm">Input</span>
-                        <span class="lao-text">ປ້ອນຂໍ້ມູນ ມັດທະຍົມ</span>
-                    </h3>
-                    
-                    <div class="space-y-6">
-                        <!-- Student Section -->
-                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                            <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Students / <span class="lao-text font-normal">ນັກຮຽນ</span></label>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-xs text-gray-500 mb-1 font-semibold">Total / ທັງໝົດ</label>
-                                    <input type="number" id="sec_stu_total" placeholder="0" class="w-full border border-gray-300 rounded-lg p-3 text-lg font-bold focus:ring-2 focus:ring-blue-500 outline-none transition" oninput="window.autoSave()">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-red-500 mb-1 font-semibold">Absent / ຂາດ</label>
-                                    <input type="number" id="sec_stu_absent" placeholder="0" class="w-full border border-red-300 bg-red-50 rounded-lg p-3 text-lg font-bold text-red-700 focus:ring-2 focus:ring-red-500 outline-none transition" oninput="window.autoSave()">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-emerald-600 mb-1 font-semibold">Present / ມາ</label>
-                                    <input type="number" id="sec_stu_present" placeholder="0" readonly class="w-full border border-emerald-300 bg-emerald-50 rounded-lg p-3 text-lg font-bold text-emerald-700 outline-none">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Teacher Section -->
-                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                            <label class="block text-sm font-bold text-blue-800 mb-3 uppercase tracking-wide">Teachers / <span class="lao-text font-normal">ຄູອາຈານ</span></label>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-xs text-blue-600 mb-1 font-semibold">Total / ທັງໝົດ</label>
-                                    <input type="number" id="sec_tea_total" placeholder="0" class="w-full border border-blue-300 rounded-lg p-3 text-lg font-bold focus:ring-2 focus:ring-blue-500 outline-none transition" oninput="window.autoSave()">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-red-500 mb-1 font-semibold">Absent / ຂາດ</label>
-                                    <input type="number" id="sec_tea_absent" placeholder="0" class="w-full border border-red-300 bg-red-50 rounded-lg p-3 text-lg font-bold text-red-700 focus:ring-2 focus:ring-red-500 outline-none transition" oninput="window.autoSave()">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-emerald-600 mb-1 font-semibold">Present / ມາ</label>
-                                    <input type="number" id="sec_tea_present" placeholder="0" readonly class="w-full border border-emerald-300 bg-emerald-50 rounded-lg p-3 text-lg font-bold text-emerald-700 outline-none">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Remarks Section -->
-                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-                            <label class="block text-sm font-bold text-yellow-800 mb-2 uppercase tracking-wide">Remarks / <span class="lao-text font-normal">ໝາຍເຫດ</span></label>
-                            <textarea id="sec_remarks" rows="2" class="w-full border border-yellow-300 bg-white rounded-lg p-3 text-sm focus:ring-2 focus:ring-yellow-500 outline-none transition lao-text" placeholder="Write who is absent and why... (ຂຽນໝາຍເຫດ)" oninput="window.autoSave()"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PREVIEW & COPY -->
-                <div class="flex flex-col h-full">
-                    <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 flex-1 flex flex-col">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <span class="bg-green-100 text-green-700 p-1.5 rounded-lg text-sm">Preview</span>
-                            <span class="lao-text">ຕົວຢ່າງລາຍງານ</span>
-                        </h3>
-                        
-                        <!-- The Text Box -->
-                        <div id="secondaryReportText" class="flex-1 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 lao-text text-base leading-relaxed text-gray-800 font-medium whitespace-pre-wrap font-sans">
-                            <!-- JS fills this -->
-                        </div>
-
-                        <!-- Copy Button -->
-                        <button onclick="window.copySecondaryText()" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg shadow-md transition flex items-center justify-center gap-2 text-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                            Copy for WhatsApp
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">Changes saved</div>
-        <div id="loadingOverlay" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50"><div class="bg-white p-4 rounded-xl flex items-center gap-3"><div class="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div><span>Generating...</span></div></div>
-
-    </main>
-    
-    <!-- Footer with Dynamic Copyright -->
-    <footer class="text-center py-4 text-gray-500 text-sm no-print mt-auto border-t border-gray-200">
-        &copy; <span id="copyrightYear"></span> ໂຮງຮຽນ ນີຣະດາ (Neerada School). All rights reserved.
-    </footer>
-
-    <!-- FIREBASE & APP LOGIC -->
-    <script type="module">
-        // Import Firebase (Modular - CDN Version)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-        // =================================================================
-        // 🔴 FIREBASE CONFIG 🔴
-        // =================================================================
-        const firebaseConfig = {
-          apiKey: "AIzaSyDNpzkpMyI16hVre0h2EHUYrtx3Evk9asE",
-          authDomain: "neerada-attendance.firebaseapp.com",
-          projectId: "neerada-attendance",
-          storageBucket: "neerada-attendance.firebasestorage.app",
-          messagingSenderId: "609157341401",
-          appId: "1:609157341401:web:346129d05c4f079eb01ec8"
-        };
-        // =================================================================
-
-        // --- GLOBAL APP ID (For path structure) ---
-        const APP_ID = 'neerada-school-app'; 
-
-        // --- STATE ---
-        let db = null;
-        let auth = null;
-        let user = null;
-        let currentDept = 'primary';
-        let currentDate = '';
-        let tableData = [];
-        let teacherData = [];
-        let kindergartenStats = { stuTotal: 0, stuAbsent: 0, teaTotal: 0, teaAbsent: 0, remarks: '' };
-        let secondaryStats = { stuTotal: 0, stuAbsent: 0, teaTotal: 0, teaAbsent: 0, remarks: '' };
-        let liveStats = { students: { total: 0, present: 0, absent: 0 }, teachers: { total: 0, present: 0, absent: 0 } };
-        let saveTimeout; // For debounce
-
-        // --- CONSTANTS ---
-        const CLASS_STRUCTURE = {
-            'primary': [
-                { id: 'p1a', name: 'ປ1A', total: 26 }, { id: 'p1b', name: 'ປ1B', total: 26 }, { id: 'p1c', name: 'ປ1C', total: 25 },
-                { id: 'p1d', name: 'ປ1D', total: 25 }, { id: 'p1e', name: 'ປ1E', total: 23 }, { id: 'p1f', name: 'ປ1F', total: 25 }, { id: 'p1g', name: 'ປ1G', total: 27 },
-                { id: 'p2a', name: 'ປ2A', total: 29 }, { id: 'p2b', name: 'ປ2B', total: 30 }, { id: 'p2c', name: 'ປ2C', total: 31 },
-                { id: 'p2d', name: 'ປ2D', total: 29 }, { id: 'p2e', name: 'ປ2E', total: 27 }, { id: 'p2f', name: 'ປ2F', total: 26 }, { id: 'p2g', name: 'ປ2G', total: 26 },
-                { id: 'p3a', name: 'ປ3A', total: 27 }, { id: 'p3b', name: 'ປ3B', total: 28 }, { id: 'p3c', name: 'ປ3C', total: 28 },
-                { id: 'p3d', name: 'ປ3D', total: 26 }, { id: 'p3e', name: 'ປ3E', total: 26 }, { id: 'p3f', name: 'ປ3F', total: 28 }, { id: 'p3g', name: 'ປ3G', total: 26 },
-                { id: 'p4a', name: 'ປ4A', total: 30 }, { id: 'p4b', name: 'ປ4B', total: 29 }, { id: 'p4c', name: 'ປ4C', total: 30 },
-                { id: 'p4d', name: 'ປ4D', total: 27 }, { id: 'p4e', name: 'ປ4E', total: 30 }, { id: 'p4f', name: 'ປ4F', total: 26 },
-                { id: 'p5a', name: 'ປ5A', total: 27 }, { id: 'p5b', name: 'ປ5B', total: 27 }, { id: 'p5c', name: 'ປ5C', total: 27 },
-                { id: 'p5d', name: 'ປ5D', total: 27 }, { id: 'p5e', name: 'ປ5E', total: 27 }, { id: 'p5f', name: 'ປ5F', total: 26 },
-            ]
-        };
-
-        const TEACHER_DEFAULTS = [
-            { id: 't_lao', name: 'Lao Teachers (ຄູລາວ)', total: 0, absent: 0, remarks: '' },
-            { id: 't_eng', name: 'English Teachers (ຄູພາສາອັງກິດ)', total: 0, absent: 0, remarks: '' }
-        ];
-
-        // --- INIT FIREBASE ---
-        async function initFirebase() {
-            try {
-                if (!firebaseConfig.apiKey) {
-                    console.warn("Firebase Config missing!");
-                    document.getElementById('connectionStatus').innerHTML = '<span class="text-red-200">Config Missing</span>';
-                    return;
-                }
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                onAuthStateChanged(auth, (u) => {
-                    user = u;
-                    if (user) {
-                        document.getElementById('connectionStatus').innerHTML = `<div class="w-2 h-2 bg-green-400 rounded-full"></div> Connected`;
-                        loadDataForView();
-                        loadSettings();
-                    } else {
-                         signInAnonymously(auth).catch(e => console.error(e));
-                    }
-                });
-
-            } catch (e) {
-                console.error("Firebase Init Error:", e);
-                document.getElementById('connectionStatus').innerHTML = '<span class="text-red-200">Error</span>';
-            }
-        }
-
-        // --- DB OPERATIONS ---
-        async function loadRecord(date) {
-            if (!db || !user) return null;
-            try {
-                const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'attendance', date);
-                const docSnap = await getDoc(docRef);
-                return docSnap.exists() ? docSnap.data() : null;
-            } catch (e) {
-                console.error("Load Error:", e);
-                return null;
-            }
-        }
-
-        async function saveRecord(date, dept, data, teachersOrSecStats) {
-            if (!db || !user) return;
-            try {
-                const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'attendance', date);
-                const docSnap = await getDoc(docRef);
-                let record = docSnap.exists() ? docSnap.data() : { date: date, departments: {}, teachers: [] };
-
-                if (dept === 'secondary') record.departments['secondary_stats'] = data;
-                else if (dept === 'kindergarten') record.departments['kindergarten_stats'] = data;
-                else {
-                    record.departments[dept] = data;
-                    record.teachers = teachersOrSecStats;
-                }
-                await setDoc(docRef, record);
-                return true;
-            } catch (e) { console.error("Save Error:", e); throw e; }
-        }
-
-        // --- DATA LOADING LOGIC (Was Missing in original snippet) ---
-        async function loadDataForView() {
-            if (!db || !user) return;
-            
-            // Show loading state if needed, or just proceed
-            const data = await loadRecord(currentDate);
-            
-            if (currentDept === 'primary') {
-                // Load Primary Data
-                if (data && data.departments && data.departments['primary']) {
-                    tableData = data.departments['primary'];
-                    teacherData = data.teachers || JSON.parse(JSON.stringify(TEACHER_DEFAULTS));
-                } else {
-                    // Initialize with defaults
-                    tableData = JSON.parse(JSON.stringify(CLASS_STRUCTURE['primary']));
-                    teacherData = JSON.parse(JSON.stringify(TEACHER_DEFAULTS));
-                }
-                
-                // Sanitize Teacher Names (Fix old data with HTML tags)
-                if (teacherData && teacherData.length > 0) {
-                     teacherData.forEach(t => {
-                         if (t.name.includes('<br>')) {
-                             t.name = t.name.replace(/<[^>]*>/g, ' ').replace('Lao Teachers', 'Lao Teachers (ຄູລາວ)').replace('English Teachers', 'English Teachers (ຄູພາສາອັງກິດ)').trim();
-                         }
-                     });
-                }
-
-                renderTable();
-            } else if (currentDept === 'secondary') {
-                // Load Secondary Data
-                if (data && data.departments && data.departments['secondary_stats']) {
-                    const stats = data.departments['secondary_stats'];
-                    document.getElementById('sec_stu_total').value = stats.stuTotal || 0;
-                    document.getElementById('sec_stu_absent').value = stats.stuAbsent || 0;
-                    document.getElementById('sec_tea_total').value = stats.teaTotal || 0;
-                    document.getElementById('sec_tea_absent').value = stats.teaAbsent || 0;
-                    document.getElementById('sec_remarks').value = stats.remarks || '';
-                } else {
-                    // Clear inputs
-                    document.getElementById('sec_stu_total').value = '';
-                    document.getElementById('sec_stu_absent').value = '';
-                    document.getElementById('sec_tea_total').value = '';
-                    document.getElementById('sec_tea_absent').value = '';
-                    document.getElementById('sec_remarks').value = '';
-                }
-                updateSecondaryCalc();
-            } else if (currentDept === 'kindergarten') {
-                // Load Kindergarten Data
-                if (data && data.departments && data.departments['kindergarten_stats']) {
-                    const stats = data.departments['kindergarten_stats'];
-                    document.getElementById('kin_stu_total').value = stats.stuTotal || 0;
-                    document.getElementById('kin_stu_absent').value = stats.stuAbsent || 0;
-                    document.getElementById('kin_tea_total').value = stats.teaTotal || 0;
-                    document.getElementById('kin_tea_absent').value = stats.teaAbsent || 0;
-                    document.getElementById('kin_remarks').value = stats.remarks || '';
-                } else {
-                    // Clear inputs
-                    document.getElementById('kin_stu_total').value = '';
-                    document.getElementById('kin_stu_absent').value = '';
-                    document.getElementById('kin_tea_total').value = '';
-                    document.getElementById('kin_tea_absent').value = '';
-                    document.getElementById('kin_remarks').value = '';
-                }
-                updateKindergartenCalc();
-            }
-        }
-
-        // --- LOGO HANDLING (COMPRESSED) ---
-        window.handleLogoUpload = function(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = async function() {
-                        // Maximize quality within Firestore 1MB limit
-                        const canvas = document.createElement('canvas');
-                        // BUMPED TO 1024 to allow "No Limit" feeling while respecting strict DB limits
-                        const MAX_WIDTH = 1024; 
-                        const MAX_HEIGHT = 1024;
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > height) {
-                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                        } else {
-                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        const base64 = canvas.toDataURL('image/png', 0.85); // High quality
-                        
-                        // UI Update
-                        updateLogoUI(base64);
-                        
-                        // Save to DB
-                        if(db && user) {
-                            try {
-                                const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'global');
-                                await setDoc(docRef, { logoUrl: base64 }, { merge: true });
-                                showToast("Logo Saved & Updated!");
-                            } catch(err) { console.error(err); showToast("Error saving logo (File too large for DB)"); }
-                        }
-                    }
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        async function loadSettings() {
-            if (!db || !user) return;
-            try {
-                const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'global');
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists() && docSnap.data().logoUrl) {
-                    updateLogoUI(docSnap.data().logoUrl);
-                }
-            } catch (e) { console.error("Settings Load Error", e); }
-        }
-
-        function updateLogoUI(url) {
-            // Navbar
-            document.getElementById('appLogoDisplay').src = url;
-            document.getElementById('appLogoDisplay').classList.remove('hidden');
-            document.getElementById('defaultLogoText').classList.add('hidden');
-            
-            // Report (Hidden by default, used in Print/Image)
-            // document.getElementById('reportLogo').src = url;
-            // document.getElementById('reportLogo').classList.remove('hidden');
-            
-            // Favicon & Apple Icon
-            document.getElementById('favicon').href = url;
-            document.getElementById('appleTouchIcon').href = url;
-        }
-
-        // --- APP LOGIC ---
-        window.addEventListener('DOMContentLoaded', () => {
-            const yearSpan = document.getElementById('copyrightYear');
-            const schoolYearSpan = document.getElementById('schoolYear');
-            const currentYear = new Date().getFullYear();
-            yearSpan.textContent = currentYear;
-            const month = new Date().getMonth();
-            const sy = month >= 7 ? `${currentYear}-${currentYear+1}` : `${currentYear-1}-${currentYear}`;
-            schoolYearSpan.textContent = sy;
-
-            const dateSelector = document.getElementById('dateSelector');
-            let d = new Date();
-            if (d.getDay() === 0) d.setDate(d.getDate() + 1);
-            if (d.getDay() === 6) d.setDate(d.getDate() + 2);
-            currentDate = d.toISOString().split('T')[0];
-            dateSelector.value = currentDate;
-            document.getElementById('displayDate').textContent = formatDate(currentDate);
-
-            dateSelector.addEventListener('input', (e) => {
-                const val = e.target.value;
-                if(!val) return;
-                const day = new Date(val).getDay();
-                if (day === 0 || day === 6) { alert("Please select a weekday (Monday - Friday)."); e.target.value = currentDate; return; }
-                currentDate = val;
-                document.getElementById('displayDate').textContent = formatDate(currentDate);
-                loadDataForView();
-            });
-
-            initFirebase();
-        });
-
-        // --- AUTO SAVE ---
-        window.autoSave = function() {
-            // Update UI Calcs first (Instant feedback)
-            if(currentDept === 'secondary') window.updateSecondaryCalc();
-            else if(currentDept === 'kindergarten') window.updateKindergartenCalc();
-            else renderTable(); // If primary inputs had oninput=autoSave
-
-            // Debounce Save
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(async () => {
-                await window.saveCurrentData(false); // False = silent/auto mode
-            }, 1000);
-        }
-
-        window.saveCurrentData = async function(isManual = true) {
-            try {
-                if (currentDept === 'primary') {
-                    await saveRecord(currentDate, 'primary', tableData, teacherData);
-                } else if (currentDept === 'secondary') {
-                    await saveRecord(currentDate, 'secondary', secondaryStats, null);
-                } else if (currentDept === 'kindergarten') {
-                    await saveRecord(currentDate, 'kindergarten', kindergartenStats, null);
-                }
-                showToast(isManual ? "Data saved successfully!" : "Changes saved");
-            } catch (e) { console.error(e); if(isManual) showToast("Error saving data."); }
-        }
-
-        window.updateRow = function(type, index, field, value) {
-            const arr = type === 'student' ? tableData : teacherData;
-            
-            if (field === 'remarks' || field === 'name') {
-                arr[index][field] = value;
-            } else {
-                arr[index][field] = parseInt(value) || 0;
-            }
-            
-            renderTable();
-            // Trigger auto-save for primary inputs
-            window.autoSave(); 
-        }
-
-        window.switchTab = function(dept) {
-            currentDept = dept;
-            const tabs = ['kindergarten', 'primary', 'secondary'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                if (!btn) return;
-                if (t === dept) {
-                    btn.className = "flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all bg-white shadow text-emerald-700 lao-text";
-                } else {
-                    btn.className = "flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all hover:bg-gray-200 text-gray-700 lao-text";
-                }
-            });
-
-            document.getElementById('kindergartenView').classList.add('hidden');
-            document.getElementById('primaryView').classList.add('hidden');
-            document.getElementById('secondaryView').classList.add('hidden');
-            document.getElementById(`${dept}View`).classList.remove('hidden');
-
-            const primActions = document.getElementById('primaryActions');
-            if (dept === 'primary') {
-                primActions.classList.remove('hidden');
-            } else {
-                primActions.classList.add('hidden');
-            }
-            loadDataForView();
-        }
-
-        window.updateKindergartenCalc = function() {
-            const stuTotal = parseInt(document.getElementById('kin_stu_total').value) || 0;
-            const stuAbsent = parseInt(document.getElementById('kin_stu_absent').value) || 0;
-            const teaTotal = parseInt(document.getElementById('kin_tea_total').value) || 0;
-            const teaAbsent = parseInt(document.getElementById('kin_tea_absent').value) || 0;
-            const remarks = document.getElementById('kin_remarks').value || '';
-
-            const stuPresent = Math.max(0, stuTotal - stuAbsent);
-            const teaPresent = Math.max(0, teaTotal - teaAbsent);
-            const grandTotal = stuPresent + teaPresent;
-
-            document.getElementById('kin_stu_present').value = stuPresent;
-            document.getElementById('kin_tea_present').value = teaPresent;
-
-            kindergartenStats = { stuTotal, stuAbsent, teaTotal, teaAbsent, remarks };
-
-            const dateStr = formatDateShort(currentDate);
-            const percent = stuTotal > 0 ? ((stuPresent / stuTotal) * 100).toFixed(1) + '%' : '0%';
-
-            const reportHTML = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
-📅 Date / ວັນທີ: ${dateStr} (ອະນຸບານ)
-------------------
-🎓 Students / ນັກຮຽນ:
-👥 Total / ທັງໝົດ: ${stuTotal}
-✅ Present / ມາ: ${stuPresent}
-❌ Absent / ຂາດ: ${stuAbsent}
-📊 Rate / ເປີເຊັນ: ${percent}
-
-👩‍🏫 Teachers / ຄູອາຈານ & ຄູຮັບເຊີນ:
-👥 Total / ທັງໝົດ: ${teaTotal}
-✅ Present / ມາ: ${teaPresent}
-❌ Absent / ຂາດ: ${teaAbsent}
-📝 ໝາຍເຫດ / Remarks: ${remarks || '-'}
-📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${grandTotal}`;
-            document.getElementById('kindergartenReportText').innerText = reportHTML;
-        }
-
-        window.updateSecondaryCalc = function() {
-            const stuTotal = parseInt(document.getElementById('sec_stu_total').value) || 0;
-            const stuAbsent = parseInt(document.getElementById('sec_stu_absent').value) || 0;
-            const teaTotal = parseInt(document.getElementById('sec_tea_total').value) || 0;
-            const teaAbsent = parseInt(document.getElementById('sec_tea_absent').value) || 0;
-            const remarks = document.getElementById('sec_remarks').value || '';
-
-            const stuPresent = Math.max(0, stuTotal - stuAbsent);
-            const teaPresent = Math.max(0, teaTotal - teaAbsent);
-            const grandTotal = stuPresent + teaPresent;
-
-            document.getElementById('sec_stu_present').value = stuPresent;
-            document.getElementById('sec_tea_present').value = teaPresent;
-
-            secondaryStats = { stuTotal, stuAbsent, teaTotal, teaAbsent, remarks };
-
-            const dateStr = formatDateShort(currentDate);
-            const percent = stuTotal > 0 ? ((stuPresent / stuTotal) * 100).toFixed(1) + '%' : '0%';
-
-            // UPDATED PREVIEW TEXT FORMAT - SECONDARY
-            const reportHTML = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
-📅 Date / ວັນທີ: ${dateStr} (ມັດທະຍົມ)
-------------------
-🎓 Students / ນັກຮຽນ:
-👥 Total / ທັງໝົດ: ${stuTotal}
-✅ Present / ມາ: ${stuPresent}
-❌ Absent / ຂາດ: ${stuAbsent}
-📊 Rate / ເປີເຊັນ: ${percent}
-
-👩‍🏫 Teachers / ຄູອາຈານ & ຄູຮັບເຊີນ:
-👥 Total / ທັງໝົດ: ${teaTotal}
-✅ Present / ມາ: ${teaPresent}
-❌ Absent / ຂາດ: ${teaAbsent}
-📝 ໝາຍເຫດ / Remarks: ${remarks || '-'}
-📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${grandTotal}`;
-            document.getElementById('secondaryReportText').innerText = reportHTML;
-        }
-
-        // Helper: Format Date
-        function formatDate(dateStr) {
-            const d = new Date(dateStr);
-            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            return `${days[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-        }
-        function formatDateShort(dateStr) {
-            const d = new Date(dateStr);
-            return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-        }
-
-        // Helper: Render Table
-        function renderTable() {
-            const tbody = document.getElementById('attendanceTableBody');
-            tbody.innerHTML = '';
-            liveStats.students = { total: 0, present: 0, absent: 0 };
-            liveStats.teachers = { total: 0, present: 0, absent: 0 }; // Init Teachers
-
-            tableData.forEach((row, index) => {
-                const total = parseInt(row.total) || 0;
-                const absent = parseInt(row.absent) || 0;
-                const present = Math.max(0, total - absent);
-                liveStats.students.total += total; liveStats.students.present += present; liveStats.students.absent += absent;
-
-                const tr = document.createElement('tr');
-                tr.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
-                tr.innerHTML = `
-                    <td class="p-2 border-r border-gray-200 text-center text-gray-500 text-xs">${index + 1}</td>
-                    <td class="p-0 border-r border-gray-200">
-                        <input type="text" class="w-full h-full p-2 text-center font-bold text-xs bg-transparent focus:bg-emerald-50 outline-none" 
-                        value="${row.name}" onchange="updateRow('student', ${index}, 'name', this.value)">
-                    </td>
-                    <td class="p-0 border-r border-gray-200"><input type="number" min="0" class="w-full h-full p-2 text-center bg-transparent focus:bg-emerald-50 outline-none text-xs" value="${row.total}" onchange="updateRow('student', ${index}, 'total', this.value)"></td>
-                    <td class="p-0 border-r border-gray-200"><input type="number" readonly class="w-full h-full p-2 text-center outline-none text-xs" value="${present}"></td>
-                    <td class="p-0 border-r border-gray-200 bg-red-50/30"><input type="number" min="0" class="w-full h-full p-2 text-center bg-transparent focus:bg-red-50 text-red-700 font-bold outline-none text-xs" value="${row.absent}" onchange="updateRow('student', ${index}, 'absent', this.value)"></td>
-                    <td class="p-0"><input type="text" class="w-full h-full p-2 text-left bg-transparent focus:bg-yellow-50 outline-none lao-text text-[10px]" value="${row.remarks || ''}" onchange="updateRow('student', ${index}, 'remarks', this.value)"></td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // Teachers
-            const teacherBody = document.getElementById('teacherTableBody');
-            teacherBody.innerHTML = '';
-            teacherData.forEach((row, index) => {
-                const total = parseInt(row.total) || 0;
-                const absent = parseInt(row.absent) || 0;
-                const present = Math.max(0, total - absent);
-                liveStats.teachers.total += total; liveStats.teachers.present += present; liveStats.teachers.absent += absent; // Track teachers
-
-                // Note: Width of first cell explicitly matches student table for alignment
-                teacherBody.innerHTML += `
-                    <tr>
-                        <td class="p-2 border-r border-gray-200 text-center text-gray-400 text-xs">-</td>
-                        <td class="p-0 border-r border-gray-200">
-                            <input type="text" class="w-full h-full p-2 text-center font-bold text-gray-700 text-xs bg-transparent focus:bg-emerald-50 outline-none" 
-                            value="${row.name}" onchange="updateRow('teacher', ${index}, 'name', this.value)">
-                        </td>
-                        <td class="p-0 border-r border-gray-200"><input type="number" min="0" class="w-full h-full p-2 text-center bg-transparent focus:bg-emerald-50 outline-none text-xs" value="${row.total}" onchange="updateRow('teacher', ${index}, 'total', this.value)"></td>
-                        <td class="p-0 border-r border-gray-200"><input type="number" readonly class="w-full h-full p-2 text-center outline-none text-xs" value="${present}"></td>
-                        <td class="p-0 border-r border-gray-200 bg-red-50/30"><input type="number" min="0" class="w-full h-full p-2 text-center bg-transparent focus:bg-red-50 text-red-700 font-bold outline-none text-xs" value="${row.absent}" onchange="updateRow('teacher', ${index}, 'absent', this.value)"></td>
-                        <td class="p-0"><input type="text" class="w-full h-full p-2 text-left bg-transparent focus:bg-yellow-50 outline-none lao-text text-[10px]" value="${row.remarks || ''}" onchange="updateRow('teacher', ${index}, 'remarks', this.value)"></td>
-                    </tr>
-                `;
-            });
-
-            // Student Summary Row (Injected after students)
-            const percentStudents = liveStats.students.total > 0 ? ((liveStats.students.present / liveStats.students.total) * 100).toFixed(1) : 0;
-            document.getElementById('studentTotalBody').innerHTML = `
-                <tr class="bg-emerald-100 font-bold text-gray-900">
-                    <td colspan="2" class="p-2 border-r border-emerald-200 text-right pr-2 lao-text text-xs">ລວມນັກຮຽນ (Total Students)</td>
-                    <td class="p-2 border-r border-emerald-200 text-xs text-center">${liveStats.students.total}</td>
-                    <td class="p-2 border-r border-emerald-200 text-xs text-center">${liveStats.students.present}</td>
-                    <td class="p-2 border-r border-emerald-200 text-red-700 text-xs text-center">${liveStats.students.absent}</td>
-                    <td class="p-2 text-left text-[10px] text-gray-600"><span class="font-bold">${percentStudents}%</span> Present</td>
-                </tr>
-            `;
-
-            // Teacher Summary Row (Injected after teachers)
-            const percentTeachers = liveStats.teachers.total > 0 ? ((liveStats.teachers.present / liveStats.teachers.total) * 100).toFixed(1) : 0;
-            document.getElementById('teacherTotalBody').innerHTML = `
-                <tr class="bg-blue-100 font-bold text-gray-900">
-                    <td colspan="2" class="p-2 border-r border-blue-200 text-right pr-2 lao-text text-xs">ລວມຄູ (Total Teachers)</td>
-                    <td class="p-2 border-r border-blue-200 text-xs text-center">${liveStats.teachers.total}</td>
-                    <td class="p-2 border-r border-blue-200 text-xs text-center">${liveStats.teachers.present}</td>
-                    <td class="p-2 border-r border-blue-200 text-red-700 text-xs text-center">${liveStats.teachers.absent}</td>
-                    <td class="p-2 text-left text-[10px] text-gray-600"><span class="font-bold">${percentTeachers}%</span> Present</td>
-                </tr>
-            `;
-        }
-
-        window.copyKindergartenText = function() {
-            const text = document.getElementById('kindergartenReportText').innerText;
-            copyToClipboard(text);
-        }
-
-        window.copySecondaryText = function() {
-            const text = document.getElementById('secondaryReportText').innerText;
-            copyToClipboard(text);
-        }
-
-        window.copyTextSummary = function() {
-            const dateStr = formatDateShort(currentDate);
-            const percent = liveStats.students.total > 0 ? ((liveStats.students.present / liveStats.students.total) * 100).toFixed(1) + '%' : '0%';
-            
-            // Gather Teacher Remarks
-            let teacherRemarks = [];
-            teacherData.forEach(t => {
-                if(t.remarks && t.remarks.trim() !== '') {
-                    // Extract name from "Lao Teachers (ຄູລາວ)" to just "Lao Teachers" or "ຄູລາວ" if preferred, keeping simple for now
-                    const shortName = t.name.replace(/<[^>]*>/g, '').split(' (')[0]; 
-                    teacherRemarks.push(`${shortName}: ${t.remarks}`);
-                }
-            });
-            const remarksStr = teacherRemarks.length > 0 ? teacherRemarks.join(', ') : '= ມາທັງໝົດ';
-
-            // UPDATED PRIMARY TEXT FORMAT
-            const text = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ
-📅 Date / ວັນທີ: ${dateStr} (ປະຖົມ)
-------------------
-🎓 Students / ນັກຮຽນ:
-👥 Total / ທັງໝົດ: ${liveStats.students.total}
-✅ Present / ມາ: ${liveStats.students.present}
-❌ Absent / ຂາດ: ${liveStats.students.absent}
-📊 Rate / ເປີເຊັນ: ${percent}
-
-👩‍🏫 Teachers / ຄູອາຈານ:
-👥 Total / ທັງໝົດ: ${liveStats.teachers.total}
-✅ Present / ມາ: ${liveStats.teachers.present}
-❌ Absent / ຂາດ: ${liveStats.teachers.absent}
-📝 ໝາຍເຫດ / Remarks: ${remarksStr}`;
-            copyToClipboard(text);
-        }
-
-        async function copyToClipboard(text) {
-            try {
-                await navigator.clipboard.writeText(text);
-                showToast("Copied to Clipboard!");
-            } catch (err) {
-                try {
-                    const textArea = document.createElement("textarea");
-                    textArea.value = text;
-                    textArea.style.position = "fixed";
-                    textArea.style.left = "-9999px";
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    showToast("Copied to Clipboard!");
-                } catch (fallbackErr) {
-                    console.error('Fallback copy failed', fallbackErr);
-                    showToast("Error Copying");
-                }
-            }
-        }
-
-        window.captureImage = function() {
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            const element = document.getElementById('reportCard');
-            
-            // 1. Create a "Ghost" Clone
-            const ghost = element.cloneNode(true);
-            
-            // 2. ROBUST DATA CAPTURE: Replace Inputs with Text
-            // html2canvas often fails with inputs. We will replace every input in the ghost
-            // with a standard text element containing the value.
-            const originalInputs = element.querySelectorAll('input, textarea');
-            const ghostInputs = ghost.querySelectorAll('input, textarea');
-
-            ghostInputs.forEach((ghostInput, i) => {
-                const originalInput = originalInputs[i];
-                const val = originalInput.value || '';
-                
-                const div = document.createElement('div');
-                div.textContent = val;
-                
-                // Copy classes
-                div.className = ghostInput.className;
-                
-                // Fix styles for text rendering vs input rendering
-                div.style.display = 'flex';
-                div.style.alignItems = 'center'; // Vertical align
-                
-                // Horizontal align based on class
-                if (ghostInput.classList.contains('text-center')) {
-                    div.style.justifyContent = 'center';
-                    div.style.textAlign = 'center';
-                } else if (ghostInput.classList.contains('text-right')) {
-                    div.style.justifyContent = 'flex-end';
-                    div.style.textAlign = 'right';
-                } else {
-                    div.style.justifyContent = 'flex-start';
-                    div.style.textAlign = 'left';
-                }
-                
-                // Remove background/border styles if they look weird on div, 
-                // but usually keeping them is fine if they are bg-transparent.
-                // The inputs in the code are bg-transparent usually.
-                
-                // Replace in DOM
-                if(ghostInput.parentNode) {
-                    ghostInput.parentNode.replaceChild(div, ghostInput);
-                }
-            });
-
-            // 3. Style Ghost for PERFECT Capture
-            ghost.style.position = 'absolute';
-            ghost.style.left = '0'; 
-            ghost.style.top = '0';
-            ghost.style.width = '800px'; 
-            ghost.style.minWidth = '800px';
-            ghost.style.height = 'auto'; 
-            ghost.style.zIndex = '-9999'; // Hide behind app
-            ghost.style.background = 'white';
-            ghost.style.overflow = 'visible'; // Ensure no scrollbars inside
-            ghost.style.transform = 'none';
-
-            // Ensure table container inside ghost expands fully
-            const ghostTableContainer = ghost.querySelector('.overflow-x-auto');
-            if(ghostTableContainer) {
-                ghostTableContainer.style.overflow = 'visible';
-                ghostTableContainer.style.height = 'auto';
-                ghostTableContainer.style.width = '100%';
-            }
-
-            // Re-add Logo to Header
-            const logoSrc = document.getElementById('appLogoDisplay').src;
-            if(logoSrc && !logoSrc.includes('window.location.href')) {
-                const headerDiv = ghost.querySelector('.bg-gray-50');
-                if(headerDiv) {
-                    const img = document.createElement('img');
-                    img.src = logoSrc;
-                    img.className = "absolute left-6 top-6 h-16 w-16 object-contain";
-                    headerDiv.appendChild(img);
-                }
-            }
-
-            document.body.appendChild(ghost);
-
-            // 4. Wait slightly for DOM to settle
-            setTimeout(() => {
-                const height = ghost.scrollHeight + 50; // Calculate full height
-                
-                const options = {
-                    scale: 2, // High resolution
-                    backgroundColor: '#ffffff', 
-                    useCORS: true,
-                    // FORCE dimensions to match the Ghost, ignoring the phone screen size
-                    width: 800, 
-                    windowWidth: 800, 
-                    height: height, 
-                    windowHeight: height,
-                    scrollY: 0, 
-                    x: 0,
-                    y: 0
-                };
-
-                html2canvas(ghost, options).then(canvas => {
-                    document.body.removeChild(ghost); // Clean up
-                    canvas.toBlob(async blob => {
-                        document.getElementById('loadingOverlay').classList.add('hidden');
-                        if (!blob) { showToast("Error generating image"); return; }
-                        
-                        const file = new File([blob], `attendance-${currentDate}.png`, { type: 'image/png' });
-                        
-                        // Try Native Share (Mobile)
-                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                            try { 
-                                await navigator.share({ files: [file] }); 
-                                showToast("Shared successfully!"); 
-                            } catch (err) {
-                                // User cancelled or failed -> Fallback to download
-                                const link = document.createElement('a'); 
-                                link.download = `attendance-${currentDate}.png`; 
-                                link.href = canvas.toDataURL(); 
-                                link.click(); 
-                            }
-                        } else {
-                            // Desktop Fallback
-                            const link = document.createElement('a'); 
-                            link.download = `attendance-${currentDate}.png`; 
-                            link.href = canvas.toDataURL(); 
-                            link.click(); 
-                            showToast("Image downloaded!");
-                        }
-                    }, 'image/png');
-                }).catch(err => {
-                    console.error(err);
-                    document.body.removeChild(ghost);
-                    document.getElementById('loadingOverlay').classList.add('hidden');
-                    showToast("Error capturing image");
-                });
-            }, 500);
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast'); t.textContent = msg; t.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
-        }
-    </script>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col transition-all duration-300">
+
+    <!-- Navbar -->
+    <nav class="bg-emerald-700 text-white shadow-md no-print sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <!-- Logo Upload Area -->
+                    <div class="relative logo-container cursor-pointer group" onclick="document.getElementById('logoInput').click()">
+                        <div class="bg-white text-emerald-700 p-1 rounded-xl font-bold text-xl h-10 w-10 flex items-center justify-center overflow-hidden border-2 border-transparent group-hover:border-white transition-all shadow-sm">
+                            <img id="appLogoDisplay" src="" alt="NSS" class="w-full h-full object-contain hidden">
+                            <span id="defaultLogoText">NSS</span>
+                        </div>
+                        <!-- Upload Overlay -->
+                        <div class="upload-overlay absolute inset-0 bg-black/60 rounded-xl opacity-0 transition-opacity flex items-center justify-center text-[8px] tracking-wider text-white font-bold pointer-events-none">
+                            UPLOAD
+                        </div>
+                        <input type="file" id="logoInput" accept="image/*" class="hidden" onchange="window.handleLogoUpload(this)">
+                    </div>
+
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight tracking-tight">Neerada School</h1>
+                        <p class="text-[11px] text-emerald-100 opacity-90 lao-text tracking-wide">ໂຮງຮຽນ ນີຣະດາ ສີບຸນເຮືອງ</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="connectionStatus" class="text-xs font-medium bg-yellow-600/90 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 transition-colors shadow-sm">
+                        <div class="w-2 h-2 bg-yellow-200 rounded-full animate-pulse"></div>
+                        Connecting...
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-6 flex-grow">
+        
+        <!-- Controls -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 mb-6 no-print">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-end">
+                <!-- Date -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Date (Mon-Fri) / ວັນທີ</label>
+                    <input type="date" id="dateSelector" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm">
+                </div>
+                
+                <!-- Department Tabs (Redesigned for clean 3-column layout) -->
+                <div class="lg:col-span-3">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Department / ພາກວິຊາ</label>
+                    <div class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
+                        <button onclick="window.switchTab('kindergarten')" id="tab-kindergarten" class="py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 lao-text flex flex-col items-center justify-center leading-tight">
+                            Kindergarten<span class="text-[10px] sm:text-xs font-normal mt-0.5">ອະນຸບານ</span>
+                        </button>
+                        <button onclick="window.switchTab('primary')" id="tab-primary" class="py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white shadow-sm border border-slate-200/60 text-emerald-700 lao-text flex flex-col items-center justify-center leading-tight">
+                            Primary<span class="text-[10px] sm:text-xs font-normal mt-0.5">ປະຖົມ</span>
+                        </button>
+                        <button onclick="window.switchTab('secondary')" id="tab-secondary" class="py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 lao-text flex flex-col items-center justify-center leading-tight">
+                            Secondary<span class="text-[10px] sm:text-xs font-normal mt-0.5">ມັດທະຍົມ</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Primary Actions -->
+                <div id="primaryActions" class="md:col-span-2 lg:col-span-4 grid grid-cols-2 md:grid-cols-4 gap-3 mt-1">
+                    <button onclick="window.saveCurrentData(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-xl transition-all shadow-sm hover:shadow flex items-center justify-center gap-2 text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6a1 1 0 10-2 0v5.586l-1.293-1.293z" /><path d="M5 18a2 2 0 002 2h6a2 2 0 002-2V8l-3.5-3.5H7a2 2 0 00-2 2v10z" /></svg>
+                        Save Data
+                    </button>
+                    <button onclick="window.print()" class="bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-medium py-3 px-4 rounded-xl transition-all shadow-sm text-sm">Print PDF</button>
+                    <button onclick="window.captureImage()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition-all shadow-sm hover:shadow flex items-center justify-center gap-2 text-sm">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
+                          Capture Image
+                    </button>
+                    <button onclick="window.copyTextSummary()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-3 px-4 rounded-xl transition-all shadow-sm border border-slate-200 text-sm">Copy Text</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PRIMARY VIEW (TABLE) ================= -->
+        <div id="primaryView" class="animate-fade-in">
+            <div id="reportCard" class="print-container bg-white rounded-none md:rounded-2xl shadow-md border border-slate-200 print-border relative z-0 overflow-hidden">
+                <div class="bg-slate-50 border-b border-slate-200 p-5 sm:p-6 text-center relative">
+                    <h2 class="text-lg sm:text-xl font-bold text-slate-800 lao-text tracking-tight">ສະຖິຕິການມາຂາດຂອງນັກຮຽນ ປະຖົມ ສົກ <span id="schoolYear">2025-2026</span></h2>
+                    <p class="text-slate-500 mt-1.5 lao-text text-sm">ວັນທີ <span id="displayDate" class="font-semibold text-emerald-700">...</span></p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[800px] text-sm text-left">
+                        <thead>
+                            <tr class="bg-emerald-100/60 text-emerald-900 border-b border-emerald-200 text-center">
+                                <th class="p-3 w-12 border-r border-emerald-200 text-xs font-semibold uppercase tracking-wider">No.<br><span class="text-[10px] lao-text font-normal opacity-75">ລ/ດ</span></th>
+                                <th class="p-3 w-36 border-r border-emerald-200 text-xs font-semibold uppercase tracking-wider">Class/Name<br><span class="text-[10px] lao-text font-normal opacity-75">ຫ້ອງ/ຊື່</span></th>
+                                <th class="p-3 w-20 border-r border-emerald-200 bg-emerald-50 text-xs font-semibold uppercase tracking-wider">Total<br><span class="text-[10px] lao-text font-normal opacity-75">ເດີມ</span></th>
+                                <th class="p-3 w-20 border-r border-emerald-200 text-xs font-semibold uppercase tracking-wider">Pres<br><span class="text-[10px] lao-text font-normal opacity-75">ມາ</span></th>
+                                <th class="p-3 w-20 border-r border-emerald-200 text-red-700 bg-red-50 text-xs font-semibold uppercase tracking-wider">Abs<br><span class="text-[10px] lao-text font-normal opacity-75">ຂາດ</span></th>
+                                <th class="p-3 text-left text-xs font-semibold uppercase tracking-wider">Rmks<br><span class="text-[10px] lao-text font-normal opacity-75">ໝາຍເຫດ</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody" class="divide-y divide-slate-100"></tbody>
+                        
+                        <!-- Student Total Row -->
+                        <tbody id="studentTotalBody" class="bg-emerald-50/80 border-t-2 border-emerald-100"></tbody>
+
+                        <thead class="bg-slate-100 border-t-4 border-slate-200"><tr class="text-left"><th colspan="6" class="p-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Teachers / <span class="lao-text font-normal opacity-80">ຄູອາຈານ</span></th></tr></thead>
+                        <tbody id="teacherTableBody" class="divide-y divide-slate-100 bg-slate-50/50"></tbody>
+
+                        <!-- Teacher Total Row -->
+                        <tbody id="teacherTotalBody" class="bg-blue-50/80 border-t-2 border-blue-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= KINDERGARTEN VIEW ================= -->
+        <div id="kindergartenView" class="hidden animate-fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                <!-- INPUT FORM -->
+                <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-6 sm:p-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-3">
+                        <span class="bg-violet-100 text-violet-700 px-3 py-1.5 rounded-lg text-sm tracking-wide shadow-sm">Input</span>
+                        <span class="lao-text">ປ້ອນຂໍ້ມູນ ອະນຸບານ</span>
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Student Section -->
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <label class="block text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Students / <span class="lao-text font-normal opacity-80">ນັກຮຽນ</span></label>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs text-slate-500 mb-1.5 font-semibold text-center">Total / ທັງໝົດ</label>
+                                    <input type="number" id="kin_stu_total" placeholder="0" class="w-full border border-slate-300 rounded-xl p-3 text-center text-lg font-bold focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition shadow-sm" oninput="window.autoSave()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-red-500 mb-1.5 font-semibold text-center">Absent / ຂາດ</label>
+                                    <input type="number" id="kin_stu_absent" placeholder="0" class="w-full border border-red-300 bg-red-50/50 rounded-xl p-3 text-center text-lg font-bold text-red-700 focus:ring-2 focus:ring-red-500 outline-none transition shadow-sm" oninput="window.autoSave()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-emerald-600 mb-1.5 font-semibold text-center">Present / ມາ</label>
+                                    <input type="number" id="kin_stu_present" placeholder="0" readonly class="w-full border border-emerald-300 bg-emerald-50 rounded-xl p-3 text-center text-lg font-bold text-emerald-700 outline-none shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Teacher Section -->
+                        <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 shadow-sm">
+                            <label class="block text-sm font-bold text-blue-800 mb-4 uppercase tracking-wider">Teachers / <span class="lao-text font-normal opacity-80">ຄູອາຈານ</span></label>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs text-blue-600 mb-1.5 font-semibold text-center">Total / ທັງໝົດ</label>
+                                    <input type="number" id="kin_tea_total" placeholder="0" class="w-full border border-blue-300 rounded-xl p-3 text-center text-lg font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm" oninput="window.autoSave()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-red-500 mb-1.5 font-semibold text-center">Absent / ຂາດ</label>
+                                    <input type="number" id="kin_tea_absent" placeholder="0" class="w-full border border-red-300 bg-red-50/50 rounded-xl p-3 text-center text-lg font-bold text-red-700 focus:ring-2 focus:ring-red-500 outline-none transition shadow-sm" oninput="window.autoSave()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-emerald-600 mb-1.5 font-semibold text-center">Present / ມາ</label>
+                                    <input type="number" id="kin_tea_present" placeholder="0" readonly class="w-full border border-emerald-300 bg-emerald-50 rounded-xl p-3 text-center text-lg font-bold text-emerald-700 outline-none shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Remarks Section -->
+                        <div class="bg-yellow-50/50 p-5 rounded-xl border border-yellow-200 shadow-sm">
+                            <label class="block text-sm font-bold text-yellow-800 mb-3 uppercase tracking-wider">Remarks / <span class="lao-text font-normal opacity-80">ໝາຍເຫດ</span></label>
+                            <textarea id="kin_remarks" rows="2" class="w-full border border-yellow-300 bg-white rounded-xl p-3 text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition lao-text shadow-sm" placeholder="Write who is absent and why... (ຂຽນໝາຍເຫດ)" oninput="window.autoSave()"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PREVIEW & COPY -->
+                <div class="flex flex-col h-full">
+                    <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-6 sm:p-8 flex-1 flex flex-col">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-3">
+                            <span class="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-sm tracking-wide shadow-sm">Preview</span>
+                            <span class="lao-text">ຕົວຢ່າງລາຍງານ ອະນຸບານ</span>
+                        </h3>
+                        
+                        <!-- The Text Box -->
+                        <div id="kindergartenReportText" class="flex-1 bg-slate-50 border border-slate-200 shadow-inner rounded-xl p-6 lao-text text-[15px] leading-relaxed text-slate-700 font-medium whitespace-pre-wrap font-sans">
+                            <!-- JS fills this -->
+                        </div>
+
+                        <!-- Copy Button -->
+                        <button onclick="window.copyKindergartenText()" class="mt-5 w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-base tracking-wide">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                            Copy for WhatsApp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SECONDARY VIEW ================= -->
+        <div id="secondaryView" class="hidden animate-fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                <!-- INPUT FORM -->
+                <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-6 sm:p-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-3">
+                        <span class="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-sm tracking-wide shadow-sm">Input</span>
+                        <span class="lao-text">ປ້ອນຂໍ້ມູນ ມັດທະຍົມ</span>
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Student Section -->
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <label class="block text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Students / <span class="lao-text font-normal opacity-80">ນັກຮຽນ</span></label>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs text-slate-500 mb-1.5 font-semibold text-center">Total / ທັງໝົດ</label>
+                                    <input type="number" id="sec_stu_total" placeholder="0" class="w-full border border-slate-300 rounded-xl p-3 text-center text-lg font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm" oninput="window.autoSave()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-red-500 mb-1.5 font-semibold text-center">Absent / ຂາດ</label>
+                                    <input type="number" id="sec_stu_absent" placeholder="0" class="w-full border border-red-300 bg-red-50/50 rounded-xl p-3 text-center text-lg font-bold text-red-700 focus:ring-2 focus:ring-red-500 outline-none transition shadow-sm" oninput="window.autoSave()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-emerald-600 mb-1.5 font-semibold text-center">Present / ມາ</label>
+                                    <input type="number" id="sec_stu_present" placeholder="0" readonly class="w-full border border-emerald-300 bg-emerald-50 rounded-xl p-3 text-center text-lg font-bold text-emerald-700 outline-none shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Teacher Section -->
+                        <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 shadow-sm">
+                            <label class="block text-sm font-bold text-blue-800 mb-4 uppercase tracking-wider">Teachers / <span class="lao-text font-normal opacity-80">ຄູອາຈານ</span></label>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs text-blue-600 mb-1.5 font-semibold text-center">Total / ທັງໝົດ</label>
+                                    <input type="number" id="sec_tea_total" placeholder="0" class="w-full border border-blue-300 rounded-xl p-3 text-center text-lg font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm" oninput="window.autoSave()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-red-500 mb-1.5 font-semibold text-center">Absent / ຂາດ</label>
+                                    <input type="number" id="sec_tea_absent" placeholder="0" class="w-full border border-red-300 bg-red-50/50 rounded-xl p-3 text-center text-lg font-bold text-red-700 focus:ring-2 focus:ring-red-500 outline-none transition shadow-sm" oninput="window.autoSave()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-emerald-600 mb-1.5 font-semibold text-center">Present / ມາ</label>
+                                    <input type="number" id="sec_tea_present" placeholder="0" readonly class="w-full border border-emerald-300 bg-emerald-50 rounded-xl p-3 text-center text-lg font-bold text-emerald-700 outline-none shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Remarks Section -->
+                        <div class="bg-yellow-50/50 p-5 rounded-xl border border-yellow-200 shadow-sm">
+                            <label class="block text-sm font-bold text-yellow-800 mb-3 uppercase tracking-wider">Remarks / <span class="lao-text font-normal opacity-80">ໝາຍເຫດ</span></label>
+                            <textarea id="sec_remarks" rows="2" class="w-full border border-yellow-300 bg-white rounded-xl p-3 text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition lao-text shadow-sm" placeholder="Write who is absent and why... (ຂຽນໝາຍເຫດ)" oninput="window.autoSave()"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PREVIEW & COPY -->
+                <div class="flex flex-col h-full">
+                    <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-6 sm:p-8 flex-1 flex flex-col">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-3">
+                            <span class="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-sm tracking-wide shadow-sm">Preview</span>
+                            <span class="lao-text">ຕົວຢ່າງລາຍງານ ມັດທະຍົມ</span>
+                        </h3>
+                        
+                        <!-- The Text Box -->
+                        <div id="secondaryReportText" class="flex-1 bg-slate-50 border border-slate-200 shadow-inner rounded-xl p-6 lao-text text-[15px] leading-relaxed text-slate-700 font-medium whitespace-pre-wrap font-sans">
+                            <!-- JS fills this -->
+                        </div>
+
+                        <!-- Copy Button -->
+                        <button onclick="window.copySecondaryText()" class="mt-5 w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-base tracking-wide">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                            Copy for WhatsApp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white font-medium px-5 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+            <span id="toastMsg">Changes saved</span>
+        </div>
+        
+        <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50">
+            <div class="bg-white p-5 rounded-2xl flex items-center gap-4 shadow-xl">
+                <div class="w-6 h-6 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                <span class="font-semibold text-slate-700">Generating...</span>
+            </div>
+        </div>
+
+    </main>
+    
+    <!-- Footer -->
+    <footer class="text-center py-5 text-slate-400 font-medium text-xs no-print mt-auto border-t border-slate-200 bg-white">
+        &copy; <span id="copyrightYear"></span> ໂຮງຮຽນ ນີຣະດາ (Neerada School). All rights reserved.
+    </footer>
+
+    <!-- FIREBASE & APP LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // =================================================================
+        // 🔴 FIREBASE CONFIG 🔴
+        // =================================================================
+        const firebaseConfig = {
+          apiKey: "AIzaSyDNpzkpMyI16hVre0h2EHUYrtx3Evk9asE",
+          authDomain: "neerada-attendance.firebaseapp.com",
+          projectId: "neerada-attendance",
+          storageBucket: "neerada-attendance.firebasestorage.app",
+          messagingSenderId: "609157341401",
+          appId: "1:609157341401:web:346129d05c4f079eb01ec8"
+        };
+        const APP_ID = 'neerada-school-app'; 
+
+        // --- STATE ---
+        let db = null, auth = null, user = null;
+        let currentDept = 'primary', currentDate = '';
+        let tableData = [], teacherData = [];
+        
+        let kindergartenStats = { stuTotal: 0, stuAbsent: 0, teaTotal: 0, teaAbsent: 0, remarks: '' };
+        let secondaryStats = { stuTotal: 0, stuAbsent: 0, teaTotal: 0, teaAbsent: 0, remarks: '' };
+        let liveStats = { students: { total: 0, present: 0, absent: 0 }, teachers: { total: 0, present: 0, absent: 0 } };
+        let saveTimeout;
+
+        const CLASS_STRUCTURE = {
+            'primary': [
+                { id: 'p1a', name: 'ປ1A', total: 26 }, { id: 'p1b', name: 'ປ1B', total: 26 }, { id: 'p1c', name: 'ປ1C', total: 25 },
+                { id: 'p1d', name: 'ປ1D', total: 25 }, { id: 'p1e', name: 'ປ1E', total: 23 }, { id: 'p1f', name: 'ປ1F', total: 25 }, { id: 'p1g', name: 'ປ1G', total: 27 },
+                { id: 'p2a', name: 'ປ2A', total: 29 }, { id: 'p2b', name: 'ປ2B', total: 30 }, { id: 'p2c', name: 'ປ2C', total: 31 },
+                { id: 'p2d', name: 'ປ2D', total: 29 }, { id: 'p2e', name: 'ປ2E', total: 27 }, { id: 'p2f', name: 'ປ2F', total: 26 }, { id: 'p2g', name: 'ປ2G', total: 26 },
+                { id: 'p3a', name: 'ປ3A', total: 27 }, { id: 'p3b', name: 'ປ3B', total: 28 }, { id: 'p3c', name: 'ປ3C', total: 28 },
+                { id: 'p3d', name: 'ປ3D', total: 26 }, { id: 'p3e', name: 'ປ3E', total: 26 }, { id: 'p3f', name: 'ປ3F', total: 28 }, { id: 'p3g', name: 'ປ3G', total: 26 },
+                { id: 'p4a', name: 'ປ4A', total: 30 }, { id: 'p4b', name: 'ປ4B', total: 29 }, { id: 'p4c', name: 'ປ4C', total: 30 },
+                { id: 'p4d', name: 'ປ4D', total: 27 }, { id: 'p4e', name: 'ປ4E', total: 30 }, { id: 'p4f', name: 'ປ4F', total: 26 },
+                { id: 'p5a', name: 'ປ5A', total: 27 }, { id: 'p5b', name: 'ປ5B', total: 27 }, { id: 'p5c', name: 'ປ5C', total: 27 },
+                { id: 'p5d', name: 'ປ5D', total: 27 }, { id: 'p5e', name: 'ປ5E', total: 27 }, { id: 'p5f', name: 'ປ5F', total: 26 },
+            ]
+        };
+
+        const TEACHER_DEFAULTS = [
+            { id: 't_lao', name: 'Lao Teachers (ຄູລາວ)', total: 0, absent: 0, remarks: '' },
+            { id: 't_eng', name: 'English Teachers (ຄູພາສາອັງກິດ)', total: 0, absent: 0, remarks: '' }
+        ];
+
+        // --- INIT ---
+        async function initFirebase() {
+            try {
+                if (!firebaseConfig.apiKey) {
+                    document.getElementById('connectionStatus').innerHTML = '<span class="text-red-200">Config Missing</span>';
+                    return;
+                }
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                onAuthStateChanged(auth, (u) => {
+                    user = u;
+                    if (user) {
+                        document.getElementById('connectionStatus').innerHTML = `<div class="w-2 h-2 bg-green-400 rounded-full"></div> Connected`;
+                        loadDataForView();
+                        loadSettings();
+                    } else {
+                         signInAnonymously(auth).catch(e => console.error(e));
+                    }
+                });
+            } catch (e) {
+                console.error("Firebase Error:", e);
+                document.getElementById('connectionStatus').innerHTML = '<span class="text-red-200">Error</span>';
+            }
+        }
+
+        async function loadRecord(date) {
+            if (!db || !user) return null;
+            try {
+                const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'attendance', date);
+                const docSnap = await getDoc(docRef);
+                return docSnap.exists() ? docSnap.data() : null;
+            } catch (e) { return null; }
+        }
+
+        async function saveRecord(date, dept, data, teachers) {
+            if (!db || !user) return;
+            try {
+                const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'attendance', date);
+                const docSnap = await getDoc(docRef);
+                let record = docSnap.exists() ? docSnap.data() : { date: date, departments: {}, teachers: [] };
+
+                if (dept === 'secondary') record.departments['secondary_stats'] = data;
+                else if (dept === 'kindergarten') record.departments['kindergarten_stats'] = data;
+                else {
+                    record.departments[dept] = data;
+                    record.teachers = teachers;
+                }
+                await setDoc(docRef, record);
+                return true;
+            } catch (e) { throw e; }
+        }
+
+        async function loadDataForView() {
+            if (!db || !user) return;
+            const data = await loadRecord(currentDate);
+            
+            if (currentDept === 'primary') {
+                if (data?.departments?.primary) {
+                    tableData = data.departments.primary;
+                    teacherData = data.teachers || JSON.parse(JSON.stringify(TEACHER_DEFAULTS));
+                } else {
+                    tableData = JSON.parse(JSON.stringify(CLASS_STRUCTURE['primary']));
+                    teacherData = JSON.parse(JSON.stringify(TEACHER_DEFAULTS));
+                }
+                
+                if (teacherData && teacherData.length > 0) {
+                     teacherData.forEach(t => {
+                         if (t.name.includes('<br>')) {
+                             t.name = t.name.replace(/<[^>]*>/g, ' ').replace('Lao Teachers', 'Lao Teachers (ຄູລາວ)').replace('English Teachers', 'English Teachers (ຄູພາສາອັງກິດ)').trim();
+                         }
+                     });
+                }
+                renderTable();
+            } else if (currentDept === 'secondary') {
+                if (data?.departments?.secondary_stats) {
+                    const stats = data.departments.secondary_stats;
+                    document.getElementById('sec_stu_total').value = stats.stuTotal || 0;
+                    document.getElementById('sec_stu_absent').value = stats.stuAbsent || 0;
+                    document.getElementById('sec_tea_total').value = stats.teaTotal || 0;
+                    document.getElementById('sec_tea_absent').value = stats.teaAbsent || 0;
+                    document.getElementById('sec_remarks').value = stats.remarks || '';
+                } else {
+                    document.getElementById('sec_stu_total').value = ''; document.getElementById('sec_stu_absent').value = '';
+                    document.getElementById('sec_tea_total').value = ''; document.getElementById('sec_tea_absent').value = '';
+                    document.getElementById('sec_remarks').value = '';
+                }
+                window.updateSecondaryCalc();
+            } else if (currentDept === 'kindergarten') {
+                if (data?.departments?.kindergarten_stats) {
+                    const stats = data.departments.kindergarten_stats;
+                    document.getElementById('kin_stu_total').value = stats.stuTotal || 0;
+                    document.getElementById('kin_stu_absent').value = stats.stuAbsent || 0;
+                    document.getElementById('kin_tea_total').value = stats.teaTotal || 0;
+                    document.getElementById('kin_tea_absent').value = stats.teaAbsent || 0;
+                    document.getElementById('kin_remarks').value = stats.remarks || '';
+                } else {
+                    document.getElementById('kin_stu_total').value = ''; document.getElementById('kin_stu_absent').value = '';
+                    document.getElementById('kin_tea_total').value = ''; document.getElementById('kin_tea_absent').value = '';
+                    document.getElementById('kin_remarks').value = '';
+                }
+                window.updateKindergartenCalc();
+            }
+        }
+
+        window.handleLogoUpload = function(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = async function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 1024, MAX_HEIGHT = 1024;
+                        let width = img.width, height = img.height;
+                        if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+                        else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const base64 = canvas.toDataURL('image/png', 0.85); 
+                        
+                        updateLogoUI(base64);
+                        if(db && user) {
+                            try {
+                                await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'global'), { logoUrl: base64 }, { merge: true });
+                                showToast("Logo Saved!");
+                            } catch(err) { showToast("Error saving logo (File too large)"); }
+                        }
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function loadSettings() {
+            if (!db || !user) return;
+            try {
+                const docSnap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'global'));
+                if (docSnap.exists() && docSnap.data().logoUrl) updateLogoUI(docSnap.data().logoUrl);
+            } catch (e) {}
+        }
+
+        function updateLogoUI(url) {
+            const logo = document.getElementById('appLogoDisplay');
+            logo.src = url; logo.classList.remove('hidden');
+            document.getElementById('defaultLogoText').classList.add('hidden');
+            document.getElementById('favicon').href = url;
+            document.getElementById('appleTouchIcon').href = url;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const yearSpan = document.getElementById('copyrightYear');
+            const schoolYearSpan = document.getElementById('schoolYear');
+            const currentYear = new Date().getFullYear();
+            yearSpan.textContent = currentYear;
+            const month = new Date().getMonth();
+            schoolYearSpan.textContent = month >= 7 ? `${currentYear}-${currentYear+1}` : `${currentYear-1}-${currentYear}`;
+
+            const dateSelector = document.getElementById('dateSelector');
+            let d = new Date();
+            if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+            if (d.getDay() === 6) d.setDate(d.getDate() + 2);
+            currentDate = d.toISOString().split('T')[0];
+            dateSelector.value = currentDate;
+            document.getElementById('displayDate').textContent = formatDate(currentDate);
+
+            dateSelector.addEventListener('input', (e) => {
+                if(!e.target.value) return;
+                const day = new Date(e.target.value).getDay();
+                if (day === 0 || day === 6) { alert("Please select a weekday (Monday - Friday)."); e.target.value = currentDate; return; }
+                currentDate = e.target.value;
+                document.getElementById('displayDate').textContent = formatDate(currentDate);
+                loadDataForView();
+            });
+
+            initFirebase();
+        });
+
+        window.autoSave = function() {
+            if(currentDept === 'secondary') window.updateSecondaryCalc();
+            else if(currentDept === 'kindergarten') window.updateKindergartenCalc();
+            else renderTable(); 
+
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                await window.saveCurrentData(false); 
+            }, 1000);
+        }
+
+        window.saveCurrentData = async function(isManual = true) {
+            try {
+                if (currentDept === 'primary') await saveRecord(currentDate, 'primary', tableData, teacherData);
+                else if (currentDept === 'secondary') await saveRecord(currentDate, 'secondary', secondaryStats, null);
+                else if (currentDept === 'kindergarten') await saveRecord(currentDate, 'kindergarten', kindergartenStats, null);
+                
+                showToast(isManual ? "Data saved successfully!" : "Changes saved");
+            } catch (e) { if(isManual) showToast("Error saving data."); }
+        }
+
+        window.updateRow = function(type, index, field, value) {
+            const arr = type === 'student' ? tableData : teacherData;
+            if (field === 'remarks' || field === 'name') arr[index][field] = value;
+            else arr[index][field] = parseInt(value) || 0;
+            
+            renderTable();
+            window.autoSave(); 
+        }
+
+        window.switchTab = function(dept) {
+            currentDept = dept;
+            const tabs = ['kindergarten', 'primary', 'secondary'];
+            
+            // Handle Tab Styles
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (!btn) return;
+                if (t === dept) {
+                    btn.className = "py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white shadow-sm border border-slate-200/60 text-emerald-700 lao-text flex flex-col items-center justify-center leading-tight";
+                } else {
+                    btn.className = "py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 lao-text flex flex-col items-center justify-center leading-tight";
+                }
+                document.getElementById(`${t}View`).classList.add('hidden');
+            });
+            
+            // Show Active View
+            document.getElementById(`${dept}View`).classList.remove('hidden');
+
+            // Toggle top Action Buttons (Only relevant for primary table)
+            const primActions = document.getElementById('primaryActions');
+            if (dept === 'primary') primActions.classList.remove('hidden');
+            else primActions.classList.add('hidden');
+            
+            loadDataForView();
+        }
+
+        window.updateKindergartenCalc = function() {
+            const stuTotal = parseInt(document.getElementById('kin_stu_total').value) || 0;
+            const stuAbsent = parseInt(document.getElementById('kin_stu_absent').value) || 0;
+            const teaTotal = parseInt(document.getElementById('kin_tea_total').value) || 0;
+            const teaAbsent = parseInt(document.getElementById('kin_tea_absent').value) || 0;
+            const remarks = document.getElementById('kin_remarks').value || '';
+
+            const stuPresent = Math.max(0, stuTotal - stuAbsent);
+            const teaPresent = Math.max(0, teaTotal - teaAbsent);
+            
+            document.getElementById('kin_stu_present').value = stuPresent;
+            document.getElementById('kin_tea_present').value = teaPresent;
+
+            kindergartenStats = { stuTotal, stuAbsent, teaTotal, teaAbsent, remarks };
+
+            const dateStr = formatDateShort(currentDate);
+            const percent = stuTotal > 0 ? ((stuPresent / stuTotal) * 100).toFixed(1) + '%' : '0%';
+
+            const reportHTML = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ\n📅 Date / ວັນທີ: ${dateStr} (ອະນຸບານ)\n------------------\n🎓 Students / ນັກຮຽນ:\n👥 Total / ທັງໝົດ: ${stuTotal}\n✅ Present / ມາ: ${stuPresent}\n❌ Absent / ຂາດ: ${stuAbsent}\n📊 Rate / ເປີເຊັນ: ${percent}\n\n👩‍🏫 Teachers / ຄູອາຈານ:\n👥 Total / ທັງໝົດ: ${teaTotal}\n✅ Present / ມາ: ${teaPresent}\n❌ Absent / ຂາດ: ${teaAbsent}\n📝 ໝາຍເຫດ / Remarks: ${remarks || '-'}\n📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${stuPresent + teaPresent}`;
+            document.getElementById('kindergartenReportText').innerText = reportHTML;
+        }
+
+        window.updateSecondaryCalc = function() {
+            const stuTotal = parseInt(document.getElementById('sec_stu_total').value) || 0;
+            const stuAbsent = parseInt(document.getElementById('sec_stu_absent').value) || 0;
+            const teaTotal = parseInt(document.getElementById('sec_tea_total').value) || 0;
+            const teaAbsent = parseInt(document.getElementById('sec_tea_absent').value) || 0;
+            const remarks = document.getElementById('sec_remarks').value || '';
+
+            const stuPresent = Math.max(0, stuTotal - stuAbsent);
+            const teaPresent = Math.max(0, teaTotal - teaAbsent);
+
+            document.getElementById('sec_stu_present').value = stuPresent;
+            document.getElementById('sec_tea_present').value = teaPresent;
+
+            secondaryStats = { stuTotal, stuAbsent, teaTotal, teaAbsent, remarks };
+
+            const dateStr = formatDateShort(currentDate);
+            const percent = stuTotal > 0 ? ((stuPresent / stuTotal) * 100).toFixed(1) + '%' : '0%';
+
+            const reportHTML = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ\n📅 Date / ວັນທີ: ${dateStr} (ມັດທະຍົມ)\n------------------\n🎓 Students / ນັກຮຽນ:\n👥 Total / ທັງໝົດ: ${stuTotal}\n✅ Present / ມາ: ${stuPresent}\n❌ Absent / ຂາດ: ${stuAbsent}\n📊 Rate / ເປີເຊັນ: ${percent}\n\n👩‍🏫 Teachers / ຄູອາຈານ:\n👥 Total / ທັງໝົດ: ${teaTotal}\n✅ Present / ມາ: ${teaPresent}\n❌ Absent / ຂາດ: ${teaAbsent}\n📝 ໝາຍເຫດ / Remarks: ${remarks || '-'}\n📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${stuPresent + teaPresent}`;
+            document.getElementById('secondaryReportText').innerText = reportHTML;
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            return `${days[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+        }
+        function formatDateShort(dateStr) {
+            const d = new Date(dateStr);
+            return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = '';
+            liveStats.students = { total: 0, present: 0, absent: 0 };
+            liveStats.teachers = { total: 0, present: 0, absent: 0 }; 
+
+            tableData.forEach((row, index) => {
+                const total = parseInt(row.total) || 0;
+                const absent = parseInt(row.absent) || 0;
+                const present = Math.max(0, total - absent);
+                liveStats.students.total += total; liveStats.students.present += present; liveStats.students.absent += absent;
+
+                const tr = document.createElement('tr');
+                tr.className = index % 2 === 0 ? 'bg-white hover:bg-slate-50 transition-colors' : 'bg-slate-50/50 hover:bg-slate-50 transition-colors';
+                tr.innerHTML = `
+                    <td class="p-2 border-r border-slate-200 text-center text-slate-400 font-medium text-xs">${index + 1}</td>
+                    <td class="p-0 border-r border-slate-200">
+                        <input type="text" class="w-full h-full p-2.5 text-center font-bold text-xs bg-transparent focus:bg-emerald-50 focus:ring-1 focus:ring-emerald-400 outline-none text-slate-700 transition" 
+                        value="${row.name}" onchange="updateRow('student', ${index}, 'name', this.value)">
+                    </td>
+                    <td class="p-0 border-r border-slate-200"><input type="number" min="0" class="w-full h-full p-2.5 text-center bg-transparent focus:bg-emerald-50 focus:ring-1 focus:ring-emerald-400 outline-none text-xs font-medium text-slate-700 transition" value="${row.total}" onchange="updateRow('student', ${index}, 'total', this.value)"></td>
+                    <td class="p-0 border-r border-slate-200"><input type="number" readonly class="w-full h-full p-2.5 text-center outline-none text-xs font-bold text-emerald-700 bg-emerald-50/30" value="${present}"></td>
+                    <td class="p-0 border-r border-slate-200 bg-red-50/40"><input type="number" min="0" class="w-full h-full p-2.5 text-center bg-transparent focus:bg-red-50 focus:ring-1 focus:ring-red-400 text-red-700 font-bold outline-none text-xs transition" value="${row.absent}" onchange="updateRow('student', ${index}, 'absent', this.value)"></td>
+                    <td class="p-0"><input type="text" class="w-full h-full p-2.5 text-left bg-transparent focus:bg-yellow-50 focus:ring-1 focus:ring-yellow-400 outline-none lao-text text-[11px] text-slate-600 transition" value="${row.remarks || ''}" onchange="updateRow('student', ${index}, 'remarks', this.value)"></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Teachers
+            const teacherBody = document.getElementById('teacherTableBody');
+            teacherBody.innerHTML = '';
+            teacherData.forEach((row, index) => {
+                const total = parseInt(row.total) || 0;
+                const absent = parseInt(row.absent) || 0;
+                const present = Math.max(0, total - absent);
+                liveStats.teachers.total += total; liveStats.teachers.present += present; liveStats.teachers.absent += absent; 
+
+                teacherBody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-2 border-r border-slate-200 text-center text-slate-300 text-xs">-</td>
+                        <td class="p-0 border-r border-slate-200">
+                            <input type="text" class="w-full h-full p-2.5 text-center font-bold text-slate-600 text-xs bg-transparent focus:bg-emerald-50 focus:ring-1 focus:ring-emerald-400 outline-none transition" 
+                            value="${row.name}" onchange="updateRow('teacher', ${index}, 'name', this.value)">
+                        </td>
+                        <td class="p-0 border-r border-slate-200"><input type="number" min="0" class="w-full h-full p-2.5 text-center bg-transparent focus:bg-emerald-50 focus:ring-1 focus:ring-emerald-400 outline-none text-xs font-medium text-slate-700 transition" value="${row.total}" onchange="updateRow('teacher', ${index}, 'total', this.value)"></td>
+                        <td class="p-0 border-r border-slate-200"><input type="number" readonly class="w-full h-full p-2.5 text-center outline-none text-xs font-bold text-emerald-700 bg-emerald-50/30" value="${present}"></td>
+                        <td class="p-0 border-r border-slate-200 bg-red-50/40"><input type="number" min="0" class="w-full h-full p-2.5 text-center bg-transparent focus:bg-red-50 focus:ring-1 focus:ring-red-400 text-red-700 font-bold outline-none text-xs transition" value="${row.absent}" onchange="updateRow('teacher', ${index}, 'absent', this.value)"></td>
+                        <td class="p-0"><input type="text" class="w-full h-full p-2.5 text-left bg-transparent focus:bg-yellow-50 focus:ring-1 focus:ring-yellow-400 outline-none lao-text text-[11px] text-slate-600 transition" value="${row.remarks || ''}" onchange="updateRow('teacher', ${index}, 'remarks', this.value)"></td>
+                    </tr>
+                `;
+            });
+
+            // Summaries
+            const percentStudents = liveStats.students.total > 0 ? ((liveStats.students.present / liveStats.students.total) * 100).toFixed(1) : 0;
+            document.getElementById('studentTotalBody').innerHTML = `
+                <tr class="bg-emerald-100/50 font-bold text-emerald-900">
+                    <td colspan="2" class="p-3 border-r border-emerald-200 text-right pr-4 lao-text text-xs uppercase tracking-wider">ລວມນັກຮຽນ / Total Students</td>
+                    <td class="p-3 border-r border-emerald-200 text-sm text-center">${liveStats.students.total}</td>
+                    <td class="p-3 border-r border-emerald-200 text-sm text-center text-emerald-700">${liveStats.students.present}</td>
+                    <td class="p-3 border-r border-emerald-200 text-red-700 text-sm text-center">${liveStats.students.absent}</td>
+                    <td class="p-3 text-left text-xs text-emerald-800"><span class="font-bold">${percentStudents}%</span> Present</td>
+                </tr>
+            `;
+
+            const percentTeachers = liveStats.teachers.total > 0 ? ((liveStats.teachers.present / liveStats.teachers.total) * 100).toFixed(1) : 0;
+            document.getElementById('teacherTotalBody').innerHTML = `
+                <tr class="bg-blue-100/50 font-bold text-blue-900">
+                    <td colspan="2" class="p-3 border-r border-blue-200 text-right pr-4 lao-text text-xs uppercase tracking-wider">ລວມຄູ / Total Teachers</td>
+                    <td class="p-3 border-r border-blue-200 text-sm text-center">${liveStats.teachers.total}</td>
+                    <td class="p-3 border-r border-blue-200 text-sm text-center text-blue-700">${liveStats.teachers.present}</td>
+                    <td class="p-3 border-r border-blue-200 text-red-700 text-sm text-center">${liveStats.teachers.absent}</td>
+                    <td class="p-3 text-left text-xs text-blue-800"><span class="font-bold">${percentTeachers}%</span> Present</td>
+                </tr>
+            `;
+        }
+
+        window.copyKindergartenText = function() {
+            copyToClipboard(document.getElementById('kindergartenReportText').innerText);
+        }
+
+        window.copySecondaryText = function() {
+            copyToClipboard(document.getElementById('secondaryReportText').innerText);
+        }
+
+        window.copyTextSummary = function() {
+            const dateStr = formatDateShort(currentDate);
+            const percent = liveStats.students.total > 0 ? ((liveStats.students.present / liveStats.students.total) * 100).toFixed(1) + '%' : '0%';
+            
+            let teacherRemarks = [];
+            teacherData.forEach(t => {
+                if(t.remarks && t.remarks.trim() !== '') {
+                    const shortName = t.name.replace(/<[^>]*>/g, '').split(' (')[0]; 
+                    teacherRemarks.push(`${shortName}: ${t.remarks}`);
+                }
+            });
+            const remarksStr = teacherRemarks.length > 0 ? teacherRemarks.join(', ') : '= ມາທັງໝົດ';
+
+            const text = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ\n📅 Date / ວັນທີ: ${dateStr} (ປະຖົມ)\n------------------\n🎓 Students / ນັກຮຽນ:\n👥 Total / ທັງໝົດ: ${liveStats.students.total}\n✅ Present / ມາ: ${liveStats.students.present}\n❌ Absent / ຂາດ: ${liveStats.students.absent}\n📊 Rate / ເປີເຊັນ: ${percent}\n\n👩‍🏫 Teachers / ຄູອາຈານ:\n👥 Total / ທັງໝົດ: ${liveStats.teachers.total}\n✅ Present / ມາ: ${liveStats.teachers.present}\n❌ Absent / ຂາດ: ${liveStats.teachers.absent}\n📝 ໝາຍເຫດ / Remarks: ${remarksStr}`;
+            copyToClipboard(text);
+        }
+
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast("Copied to Clipboard!");
+            } catch (err) {
+                try {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed"; textArea.style.left = "-9999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus(); textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showToast("Copied to Clipboard!");
+                } catch (fallbackErr) { showToast("Error Copying"); }
+            }
+        }
+
+        window.captureImage = function() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            const element = document.getElementById('reportCard');
+            const ghost = element.cloneNode(true);
+            
+            const originalInputs = element.querySelectorAll('input, textarea');
+            const ghostInputs = ghost.querySelectorAll('input, textarea');
+
+            ghostInputs.forEach((ghostInput, i) => {
+                const val = originalInputs[i].value || '';
+                const div = document.createElement('div');
+                div.textContent = val;
+                div.className = ghostInput.className;
+                div.style.display = 'flex';
+                div.style.alignItems = 'center'; 
+                
+                if (ghostInput.classList.contains('text-center')) {
+                    div.style.justifyContent = 'center'; div.style.textAlign = 'center';
+                } else if (ghostInput.classList.contains('text-right')) {
+                    div.style.justifyContent = 'flex-end'; div.style.textAlign = 'right';
+                } else {
+                    div.style.justifyContent = 'flex-start'; div.style.textAlign = 'left';
+                }
+                if(ghostInput.parentNode) ghostInput.parentNode.replaceChild(div, ghostInput);
+            });
+
+            ghost.style.position = 'absolute';
+            ghost.style.left = '0'; ghost.style.top = '0';
+            ghost.style.width = '800px'; ghost.style.minWidth = '800px';
+            ghost.style.height = 'auto'; ghost.style.zIndex = '-9999'; 
+            ghost.style.background = 'white';
+            ghost.style.overflow = 'visible'; ghost.style.transform = 'none';
+
+            const ghostTableContainer = ghost.querySelector('.overflow-x-auto');
+            if(ghostTableContainer) {
+                ghostTableContainer.style.overflow = 'visible';
+                ghostTableContainer.style.height = 'auto';
+                ghostTableContainer.style.width = '100%';
+            }
+
+            const logoSrc = document.getElementById('appLogoDisplay').src;
+            if(logoSrc && !logoSrc.includes('window.location.href')) {
+                const headerDiv = ghost.querySelector('.bg-slate-50');
+                if(headerDiv) {
+                    const img = document.createElement('img');
+                    img.src = logoSrc;
+                    img.className = "absolute left-6 top-6 h-16 w-16 object-contain";
+                    headerDiv.appendChild(img);
+                }
+            }
+
+            document.body.appendChild(ghost);
+
+            setTimeout(() => {
+                const height = ghost.scrollHeight + 50; 
+                const options = {
+                    scale: 2, backgroundColor: '#ffffff', useCORS: true,
+                    width: 800, windowWidth: 800, height: height, windowHeight: height, scrollY: 0, x: 0, y: 0
+                };
+
+                html2canvas(ghost, options).then(canvas => {
+                    document.body.removeChild(ghost);
+                    canvas.toBlob(async blob => {
+                        document.getElementById('loadingOverlay').classList.add('hidden');
+                        if (!blob) { showToast("Error generating image"); return; }
+                        const file = new File([blob], `attendance-${currentDate}.png`, { type: 'image/png' });
+                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                            try { await navigator.share({ files: [file] }); showToast("Shared successfully!"); } 
+                            catch (err) {
+                                const link = document.createElement('a'); 
+                                link.download = `attendance-${currentDate}.png`; link.href = canvas.toDataURL(); link.click(); 
+                            }
+                        } else {
+                            const link = document.createElement('a'); 
+                            link.download = `attendance-${currentDate}.png`; link.href = canvas.toDataURL(); link.click(); 
+                            showToast("Image downloaded!");
+                        }
+                    }, 'image/png');
+                }).catch(err => {
+                    document.body.removeChild(ghost);
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                    showToast("Error capturing image");
+                });
+            }, 500);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast'); 
+            document.getElementById('toastMsg').textContent = msg; 
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+    </script>
 </body>
 </html>
