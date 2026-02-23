@@ -93,14 +93,14 @@
                 <!-- Department Tabs (Redesigned for clean 3-column layout) -->
                 <div class="lg:col-span-3">
                     <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Department / ພາກວິຊາ</label>
-                    <div class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
-                        <button onclick="window.switchTab('kindergarten')" id="tab-kindergarten" class="py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 lao-text flex flex-col items-center justify-center leading-tight">
+                    <div class="grid grid-cols-3 gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
+                        <button onclick="window.switchTab('kindergarten')" id="tab-kindergarten" class="py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-medium transition-all border bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-200 lao-text flex flex-col items-center justify-center leading-tight">
                             Kindergarten<span class="text-[10px] sm:text-xs font-normal mt-0.5">ອະນຸບານ</span>
                         </button>
-                        <button onclick="window.switchTab('primary')" id="tab-primary" class="py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white shadow-sm border border-slate-200/60 text-emerald-700 lao-text flex flex-col items-center justify-center leading-tight">
+                        <button onclick="window.switchTab('primary')" id="tab-primary" class="py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-bold transition-all border bg-emerald-600 text-white border-emerald-600 shadow-md lao-text flex flex-col items-center justify-center leading-tight">
                             Primary<span class="text-[10px] sm:text-xs font-normal mt-0.5">ປະຖົມ</span>
                         </button>
-                        <button onclick="window.switchTab('secondary')" id="tab-secondary" class="py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 lao-text flex flex-col items-center justify-center leading-tight">
+                        <button onclick="window.switchTab('secondary')" id="tab-secondary" class="py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-medium transition-all border bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200 lao-text flex flex-col items-center justify-center leading-tight">
                             Secondary<span class="text-[10px] sm:text-xs font-normal mt-0.5">ມັດທະຍົມ</span>
                         </button>
                     </div>
@@ -268,7 +268,7 @@
 
                         <!-- Teacher Section -->
                         <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 shadow-sm">
-                            <label class="block text-sm font-bold text-blue-800 mb-4 uppercase tracking-wider">Teachers / <span class="lao-text font-normal opacity-80">ຄູອາຈານ</span></label>
+                            <label class="block text-sm font-bold text-blue-800 mb-4 uppercase tracking-wider">Teachers / <span class="lao-text font-normal opacity-80">ຄູອາຈານ & ຄູຮັບເຊີນ</span></label>
                             <div class="grid grid-cols-3 gap-4">
                                 <div>
                                     <label class="block text-xs text-blue-600 mb-1.5 font-semibold text-center">Total / ທັງໝົດ</label>
@@ -598,15 +598,24 @@
             currentDept = dept;
             const tabs = ['kindergarten', 'primary', 'secondary'];
             
+            const baseClass = "py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm transition-all border lao-text flex flex-col items-center justify-center leading-tight";
+            
             // Handle Tab Styles
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (!btn) return;
-                if (t === dept) {
-                    btn.className = "py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white shadow-sm border border-slate-200/60 text-emerald-700 lao-text flex flex-col items-center justify-center leading-tight";
-                } else {
-                    btn.className = "py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 lao-text flex flex-col items-center justify-center leading-tight";
+                
+                if (t === 'kindergarten') {
+                    if (dept === t) btn.className = `${baseClass} font-bold bg-violet-600 text-white border-violet-600 shadow-md`;
+                    else btn.className = `${baseClass} font-medium bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-200`;
+                } else if (t === 'primary') {
+                    if (dept === t) btn.className = `${baseClass} font-bold bg-emerald-600 text-white border-emerald-600 shadow-md`;
+                    else btn.className = `${baseClass} font-medium bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200`;
+                } else if (t === 'secondary') {
+                    if (dept === t) btn.className = `${baseClass} font-bold bg-blue-600 text-white border-blue-600 shadow-md`;
+                    else btn.className = `${baseClass} font-medium bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200`;
                 }
+                
                 document.getElementById(`${t}View`).classList.add('hidden');
             });
             
@@ -661,7 +670,7 @@
             const dateStr = formatDateShort(currentDate);
             const percent = stuTotal > 0 ? ((stuPresent / stuTotal) * 100).toFixed(1) + '%' : '0%';
 
-            const reportHTML = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ\n📅 Date / ວັນທີ: ${dateStr} (ມັດທະຍົມ)\n------------------\n🎓 Students / ນັກຮຽນ:\n👥 Total / ທັງໝົດ: ${stuTotal}\n✅ Present / ມາ: ${stuPresent}\n❌ Absent / ຂາດ: ${stuAbsent}\n📊 Rate / ເປີເຊັນ: ${percent}\n\n👩‍🏫 Teachers / ຄູອາຈານ:\n👥 Total / ທັງໝົດ: ${teaTotal}\n✅ Present / ມາ: ${teaPresent}\n❌ Absent / ຂາດ: ${teaAbsent}\n📝 ໝາຍເຫດ / Remarks: ${remarks || '-'}\n📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${stuPresent + teaPresent}`;
+            const reportHTML = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ\n📅 Date / ວັນທີ: ${dateStr} (ມັດທະຍົມ)\n------------------\n🎓 Students / ນັກຮຽນ:\n👥 Total / ທັງໝົດ: ${stuTotal}\n✅ Present / ມາ: ${stuPresent}\n❌ Absent / ຂາດ: ${stuAbsent}\n📊 Rate / ເປີເຊັນ: ${percent}\n\n👩‍🏫 Teachers / ຄູອາຈານ & ຄູຮັບເຊີນ:\n👥 Total / ທັງໝົດ: ${teaTotal}\n✅ Present / ມາ: ${teaPresent}\n❌ Absent / ຂາດ: ${teaAbsent}\n📝 ໝາຍເຫດ / Remarks: ${remarks || '-'}\n📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${stuPresent + teaPresent}`;
             document.getElementById('secondaryReportText').innerText = reportHTML;
         }
 
