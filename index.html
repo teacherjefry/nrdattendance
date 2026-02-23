@@ -648,7 +648,7 @@
             const dateStr = formatDateShort(currentDate);
             const percent = stuTotal > 0 ? ((stuPresent / stuTotal) * 100).toFixed(1) + '%' : '0%';
 
-            const reportHTML = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ\n📅 Date / ວັນທີ: ${dateStr} (ອະນຸບານ)\n------------------\n🎓 Students / ນັກຮຽນ:\n👥 Total / ທັງໝົດ: ${stuTotal}\n✅ Present / ມາ: ${stuPresent}\n❌ Absent / ຂາດ: ${stuAbsent}\n📊 Rate / ເປີເຊັນ: ${percent}\n\n👩‍🏫 Teachers / ຄູອາຈານ:\n👥 Total / ທັງໝົດ: ${teaTotal}\n✅ Present / ມາ: ${teaPresent}\n❌ Absent / ຂາດ: ${teaAbsent}\n📝 ໝາຍເຫດ / Remarks: ${remarks || '-'}\n📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${stuPresent + teaPresent}`;
+            const reportHTML = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ\n📅 Date / ວັນທີ: ${dateStr} (ອະນຸບານ)\n------------------\n🎓 Students / ນັກຮຽນ:\n👥 Total / ທັງໝົດ: ${stuTotal}\n✅ Present / ມາ: ${stuPresent}\n❌ Absent / ຂາດ: ${stuAbsent}\n📊 Rate / ເປີເຊັນ: ${percent}\n\n👩‍🏫 Teachers / ຄູອາຈານ:\n👥 Total / ທັງໝົດ: ${teaTotal}\n✅ Present / ມາ: ${teaPresent}\n❌ Absent / ຂາດ: ${teaAbsent}\n📝 ໝາຍເຫດ / Remarks: ${remarks.trim() || '= ມາທັງໝົດ'}\n📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${stuPresent + teaPresent}`;
             document.getElementById('kindergartenReportText').innerText = reportHTML;
         }
 
@@ -670,7 +670,7 @@
             const dateStr = formatDateShort(currentDate);
             const percent = stuTotal > 0 ? ((stuPresent / stuTotal) * 100).toFixed(1) + '%' : '0%';
 
-            const reportHTML = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ\n📅 Date / ວັນທີ: ${dateStr} (ມັດທະຍົມ)\n------------------\n🎓 Students / ນັກຮຽນ:\n👥 Total / ທັງໝົດ: ${stuTotal}\n✅ Present / ມາ: ${stuPresent}\n❌ Absent / ຂາດ: ${stuAbsent}\n📊 Rate / ເປີເຊັນ: ${percent}\n\n👩‍🏫 Teachers / ຄູອາຈານ & ຄູຮັບເຊີນ:\n👥 Total / ທັງໝົດ: ${teaTotal}\n✅ Present / ມາ: ${teaPresent}\n❌ Absent / ຂາດ: ${teaAbsent}\n📝 ໝາຍເຫດ / Remarks: ${remarks || '-'}\n📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${stuPresent + teaPresent}`;
+            const reportHTML = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ\n📅 Date / ວັນທີ: ${dateStr} (ມັດທະຍົມ)\n------------------\n🎓 Students / ນັກຮຽນ:\n👥 Total / ທັງໝົດ: ${stuTotal}\n✅ Present / ມາ: ${stuPresent}\n❌ Absent / ຂາດ: ${stuAbsent}\n📊 Rate / ເປີເຊັນ: ${percent}\n\n👩‍🏫 Teachers / ຄູອາຈານ & ຄູຮັບເຊີນ:\n👥 Total / ທັງໝົດ: ${teaTotal}\n✅ Present / ມາ: ${teaPresent}\n❌ Absent / ຂາດ: ${teaAbsent}\n📝 ໝາຍເຫດ / Remarks: ${remarks.trim() || '= ມາທັງໝົດ'}\n📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${stuPresent + teaPresent}`;
             document.getElementById('secondaryReportText').innerText = reportHTML;
         }
 
@@ -781,7 +781,7 @@
             });
             const remarksStr = teacherRemarks.length > 0 ? teacherRemarks.join(', ') : '= ມາທັງໝົດ';
 
-            const text = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ\n📅 Date / ວັນທີ: ${dateStr} (ປະຖົມ)\n------------------\n🎓 Students / ນັກຮຽນ:\n👥 Total / ທັງໝົດ: ${liveStats.students.total}\n✅ Present / ມາ: ${liveStats.students.present}\n❌ Absent / ຂາດ: ${liveStats.students.absent}\n📊 Rate / ເປີເຊັນ: ${percent}\n\n👩‍🏫 Teachers / ຄູອາຈານ:\n👥 Total / ທັງໝົດ: ${liveStats.teachers.total}\n✅ Present / ມາ: ${liveStats.teachers.present}\n❌ Absent / ຂາດ: ${liveStats.teachers.absent}\n📝 ໝາຍເຫດ / Remarks: ${remarksStr}`;
+            const text = `Neerada School Attendance / ໂຮງຮຽນ ນີຣະດາ\n📅 Date / ວັນທີ: ${dateStr} (ປະຖົມ)\n------------------\n🎓 Students / ນັກຮຽນ:\n👥 Total / ທັງໝົດ: ${liveStats.students.total}\n✅ Present / ມາ: ${liveStats.students.present}\n❌ Absent / ຂາດ: ${liveStats.students.absent}\n📊 Rate / ເປີເຊັນ: ${percent}\n\n👩‍🏫 Teachers / ຄູອາຈານ:\n👥 Total / ທັງໝົດ: ${liveStats.teachers.total}\n✅ Present / ມາ: ${liveStats.teachers.present}\n❌ Absent / ຂາດ: ${liveStats.teachers.absent}\n📝 ໝາຍເຫດ / Remarks: ${remarksStr}\n📊 ລວມຄູ ແລະ ນັກຮຽນມາຕົວຈິງ: ${liveStats.students.present + liveStats.teachers.present}`;
             copyToClipboard(text);
         }
 
