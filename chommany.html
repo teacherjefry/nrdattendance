@@ -12,6 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Inter', 'Noto Sans Lao', sans-serif; }
         .lao-text { font-family: 'Noto Sans Lao', sans-serif; }
@@ -38,7 +39,6 @@
 </head>
 <body class="bg-gray-100 min-h-screen text-slate-800 flex flex-col transition-all duration-300">
 
-    <!-- Navbar -->
     <nav class="bg-emerald-700 text-white shadow-lg no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -71,8 +71,6 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <!-- w-full for mobile, max-w-7xl for laptop/desktop optimization -->
     <main class="w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-8 flex-grow">
         
         <!-- Controls -->
@@ -88,18 +86,13 @@
                 <div class="lg:col-span-3">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Department / ພາກວິຊາ</label>
                     <div class="flex flex-wrap gap-2 sm:gap-0 bg-gray-100 p-1 rounded-lg">
-                        <!-- Kindergarten (First) -->
                         <button onclick="window.switchTab('kindergarten')" id="tab-kindergarten" class="flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all lao-text">Kindergarten<br><span class="text-[10px] sm:text-xs">ອະນຸບານ</span></button>
-                        <!-- Primary (Second) -->
                         <button onclick="window.switchTab('primary')" id="tab-primary" class="flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all lao-text">Primary<br><span class="text-[10px] sm:text-xs">ປະຖົມ</span></button>
-                        <!-- Secondary (Third) -->
                         <button onclick="window.switchTab('secondary')" id="tab-secondary" class="flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all bg-white shadow text-emerald-700 lao-text">Secondary<br><span class="text-[10px] sm:text-xs">ມັດທະຍົມ</span></button>
                     </div>
                 </div>
 
-                <!-- Primary Actions -->
                 <div id="primaryActions" class="md:col-span-2 lg:col-span-4 flex flex-col sm:flex-row gap-2 mt-2">
-                    <!-- Manual Save Button -->
                     <button onclick="window.saveCurrentData(true)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-lg transition shadow-sm flex items-center justify-center gap-2 opacity-80 hover:opacity-100">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6a1 1 0 10-2 0v5.586l-1.293-1.293z" /><path d="M5 18a2 2 0 002 2h6a2 2 0 002-2V8l-3.5-3.5H7a2 2 0 00-2 2v10z" /></svg>
                         Save Data
@@ -114,16 +107,14 @@
             </div>
         </div>
 
-        <!-- ================= TABLE VIEW (NOW SECONDARY) ================= -->
+        <!-- ================= TABLE VIEW (FOR SECONDARY & PRIMARY) ================= -->
         <div id="tableViewWrapper">
-            <!-- Removed overflow-hidden here to help mobile scrolling/capturing of long lists -->
             <div id="reportCard" class="print-container bg-white rounded-none md:rounded-xl shadow-lg border border-gray-200 print-border relative z-0">
                 <div class="bg-gray-50 border-b border-gray-200 p-4 sm:p-6 text-center relative">
-                    <h2 class="text-lg sm:text-xl font-bold text-gray-800 lao-text">ສະຖິຕິການມາຂາດຂອງນັກຮຽນ ມັດທະຍົມ ສົກ <span id="schoolYear">2025-2026</span></h2>
+                    <h2 id="tableTitle" class="text-lg sm:text-xl font-bold text-gray-800 lao-text">ສະຖິຕິການມາຂາດຂອງນັກຮຽນ ມັດທະຍົມ ສົກ <span id="schoolYear">2025-2026</span></h2>
                     <p class="text-gray-600 mt-1 lao-text">ວັນທີ <span id="displayDate" class="font-semibold">...</span></p>
                 </div>
                 <div class="overflow-x-auto">
-                    <!-- Added min-w-[800px] to force horizontal scrolling on mobile -->
                     <table class="w-full min-w-[800px] text-sm text-left">
                         <thead>
                             <tr class="bg-emerald-100 text-emerald-900 border-b border-emerald-200 text-center">
@@ -137,20 +128,20 @@
                         </thead>
                         <tbody id="attendanceTableBody" class="divide-y divide-gray-200"></tbody>
                         
-                        <!-- Student Total Row (Injected here) -->
+                        <!-- Student Total Row -->
                         <tbody id="studentTotalBody" class="bg-emerald-50/50 border-t-2 border-emerald-100"></tbody>
 
                         <thead class="bg-gray-100 border-t-4 border-gray-200"><tr class="text-left"><th colspan="6" class="p-2 pl-3 text-xs font-bold text-gray-600 uppercase">Teachers / <span class="lao-text font-normal">ຄູອາຈານ</span></th></tr></thead>
                         <tbody id="teacherTableBody" class="divide-y divide-gray-200 bg-gray-50/50"></tbody>
 
-                        <!-- Teacher Total Row (Injected here) -->
+                        <!-- Teacher Total Row -->
                         <tbody id="teacherTotalBody" class="bg-blue-50/50 border-t-2 border-blue-100"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- ================= FORM VIEW WRAPPER (FOR PRIMARY & KINDERGARTEN) ================= -->
+        <!-- ================= FORM VIEW WRAPPER (FOR KINDERGARTEN) ================= -->
         <div id="formViewWrapper" class="hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
@@ -158,7 +149,7 @@
                 <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <span class="bg-blue-100 text-blue-700 p-1.5 rounded-lg text-sm">Input</span>
-                        <span id="formTitleLao" class="lao-text">ປ້ອນຂໍ້ມູນ ປະຖົມ</span>
+                        <span id="formTitleLao" class="lao-text">ປ້ອນຂໍ້ມູນ ອະນຸບານ</span>
                     </h3>
                     
                     <div class="space-y-6">
@@ -243,7 +234,6 @@
 
     <!-- FIREBASE & APP LOGIC -->
     <script type="module">
-        // Import Firebase (Modular - CDN Version)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -252,38 +242,43 @@
         // 🔴 FIREBASE CONFIG 🔴
         // =================================================================
         const firebaseConfig = {
-  apiKey: "AIzaSyDNpzkpMyI16hVre0h2EHUYrtx3Evk9asE",
-  authDomain: "neerada-attendance.firebaseapp.com",
-  projectId: "neerada-attendance",
-  storageBucket: "neerada-attendance.firebasestorage.app",
-  messagingSenderId: "609157341401",
-  appId: "1:609157341401:web:bef8bcc6fbd9d7ceb01ec8"
-};
+            apiKey: "AIzaSyDNpzkpMyI16hVre0h2EHUYrtx3Evk9asE",
+            authDomain: "neerada-attendance.firebaseapp.com",
+            projectId: "neerada-attendance",
+            storageBucket: "neerada-attendance.firebasestorage.app",
+            messagingSenderId: "609157341401",
+            appId: "1:609157341401:web:bef8bcc6fbd9d7ceb01ec8"
+        };
         // =================================================================
 
-        // --- GLOBAL APP ID (For path structure) ---
         const APP_ID = 'neerada-chommany-app'; 
 
         // --- STATE ---
         let db = null;
         let auth = null;
         let user = null;
-        let currentDept = 'secondary'; // Default is the Table View (now Secondary)
+        let currentDept = 'secondary';
         let currentDate = '';
         let tableData = [];
         let teacherData = [];
         
         // Stats containers for Form Views
-        let primaryStats = { stuTotal: 0, stuAbsent: 0, teaTotal: 0, teaAbsent: 0, remarks: '' };
         let kindergartenStats = { stuTotal: 0, stuAbsent: 0, teaTotal: 0, teaAbsent: 0, remarks: '' };
         
-        // Stats for Table View (Secondary)
+        // Stats for Table View (Secondary and Primary)
         let liveStats = { students: { total: 0, present: 0, absent: 0 }, teachers: { total: 0, present: 0, absent: 0 } };
-        let saveTimeout; // For debounce
+        let saveTimeout;
 
         // --- CONSTANTS ---
         const CLASS_STRUCTURE = {
-            'secondary': [ // Updated Secondary List
+            'primary': [
+                { id: 'p1ac', name: 'ປ1 AC', total: 29 }, { id: 'p1bc', name: 'ປ1BC', total: 25 }, { id: 'p1cc', name: 'ປ1CC', total: 26 },
+                { id: 'p2ac', name: 'ປ2AC', total: 33 }, { id: 'p2bc', name: 'ປ2BC', total: 33 },
+                { id: 'p3ac', name: 'ປ3 AC', total: 30 }, { id: 'p3bc', name: 'ປ3 BC', total: 22 },
+                { id: 'p4ac', name: 'ປ4AC', total: 21 }, { id: 'p4bc', name: 'ປ4BC', total: 21 },
+                { id: 'p5ac', name: 'ປ5AC', total: 33 }
+            ],
+            'secondary': [
                 { id: 'm1ac', name: 'ມ1AC', total: 27 }, { id: 'm1bc', name: 'ມ1BC', total: 25 },
                 { id: 'm2ac', name: 'ມ2AC', total: 33 }, { id: 'm2bc', name: 'ມ2BC', total: 31 },
                 { id: 'm3ac', name: 'ມ3AC', total: 29 }, { id: 'm3bc', name: 'ມ3BC', total: 30 },
@@ -294,10 +289,16 @@
             ]
         };
 
-        const TEACHER_DEFAULTS = [
-            { id: 't_lao', name: 'Lao Teachers (ຄູລາວ)', total: 0, absent: 0, remarks: '' },
-            { id: 't_eng', name: 'English Teachers (ຄູພາສາອັງກິດ)', total: 0, absent: 0, remarks: '' }
-        ];
+        const TEACHER_DEFAULTS = {
+            'primary': [
+                { id: 't_lao', name: 'Lao Teachers (ຄູລາວ)', total: 10, absent: 0, remarks: '' },
+                { id: 't_eng', name: 'English Teachers (ຄູພາສາອັງກິດ)', total: 2, absent: 0, remarks: '' }
+            ],
+            'secondary': [
+                { id: 't_lao', name: 'Lao Teachers (ຄູລາວ)', total: 0, absent: 0, remarks: '' },
+                { id: 't_eng', name: 'English Teachers (ຄູພາສາອັງກິດ)', total: 0, absent: 0, remarks: '' }
+            ]
+        };
 
         // --- INIT FIREBASE ---
         async function initFirebase() {
@@ -305,7 +306,7 @@
                 if (!firebaseConfig.apiKey) {
                     console.warn("Firebase Config missing! Using Offline Mode.");
                     document.getElementById('connectionStatus').innerHTML = '<span class="text-gray-400">Offline Mode</span>';
-                    loadDataForView(); // Load empty/default data
+                    loadDataForView(); 
                     return;
                 }
                 const app = initializeApp(firebaseConfig);
@@ -322,7 +323,6 @@
                          signInAnonymously(auth).catch(e => console.error(e));
                     }
                 });
-
             } catch (e) {
                 console.error("Firebase Init Error:", e);
                 document.getElementById('connectionStatus').innerHTML = '<span class="text-red-200">Error</span>';
@@ -348,14 +348,13 @@
             try {
                 const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'attendance', date);
                 const docSnap = await getDoc(docRef);
-                let record = docSnap.exists() ? docSnap.data() : { date: date, departments: {}, teachers: [] };
+                let record = docSnap.exists() ? docSnap.data() : { date: date, departments: {}, teachers: {} };
 
-                if (dept === 'secondary') {
-                    // Secondary uses table data structure now
-                    record.departments['secondary'] = data;
-                    record.teachers = teachersOrSecStats;
+                if (dept === 'secondary' || dept === 'primary') {
+                    record.departments[dept] = data;
+                    if(!record.teachers) record.teachers = {};
+                    record.teachers[dept] = teachersOrSecStats;
                 } else {
-                    // Primary and Kindergarten use simple stats objects
                     record.departments[dept + '_stats'] = data;
                 }
                 await setDoc(docRef, record);
@@ -365,21 +364,26 @@
 
         // --- DATA LOADING LOGIC ---
         async function loadDataForView() {
-            // Default/Offline Loading Logic
             let data = null;
             if(db && user) {
                 data = await loadRecord(currentDate);
             }
             
-            if (currentDept === 'secondary') {
-                // Load Table Data (Now called Secondary)
-                if (data && data.departments && data.departments['secondary']) {
-                    tableData = data.departments['secondary'];
-                    teacherData = data.teachers || JSON.parse(JSON.stringify(TEACHER_DEFAULTS));
+            if (currentDept === 'secondary' || currentDept === 'primary') {
+                if (data && data.departments && data.departments[currentDept]) {
+                    tableData = data.departments[currentDept];
+                    
+                    // Handle legacy arrays and new objects seamlessly
+                    if (data.teachers && Array.isArray(data.teachers) && currentDept === 'secondary') {
+                        teacherData = data.teachers;
+                    } else if (data.teachers && data.teachers[currentDept]) {
+                        teacherData = data.teachers[currentDept];
+                    } else {
+                        teacherData = JSON.parse(JSON.stringify(TEACHER_DEFAULTS[currentDept]));
+                    }
                 } else {
-                    // Initialize with defaults
-                    tableData = JSON.parse(JSON.stringify(CLASS_STRUCTURE['secondary']));
-                    teacherData = JSON.parse(JSON.stringify(TEACHER_DEFAULTS));
+                    tableData = JSON.parse(JSON.stringify(CLASS_STRUCTURE[currentDept]));
+                    teacherData = JSON.parse(JSON.stringify(TEACHER_DEFAULTS[currentDept]));
                 }
                 
                 // Sanitize Teacher Names
@@ -393,19 +397,14 @@
                 renderTable();
 
             } else {
-                // Load Form Data (Primary or Kindergarten)
                 let statsKey = currentDept + '_stats';
                 let statsObj = { stuTotal: 0, stuAbsent: 0, teaTotal: 0, teaAbsent: 0, remarks: '' };
 
                 if (data && data.departments && data.departments[statsKey]) {
                     statsObj = data.departments[statsKey];
                 }
+                kindergartenStats = statsObj;
 
-                // Update Local State
-                if (currentDept === 'primary') primaryStats = statsObj;
-                else kindergartenStats = statsObj;
-
-                // Populate Form
                 document.getElementById('form_stu_total').value = statsObj.stuTotal || '';
                 document.getElementById('form_stu_absent').value = statsObj.stuAbsent || '';
                 document.getElementById('form_tea_total').value = statsObj.teaTotal || '';
@@ -416,8 +415,6 @@
             }
         }
 
-
-        // --- LOGO HANDLING (COMPRESSED) ---
         window.handleLogoUpload = function(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
@@ -443,7 +440,6 @@
                         ctx.drawImage(img, 0, 0, width, height);
                         
                         const base64 = canvas.toDataURL('image/png', 0.85); 
-                        
                         updateLogoUI(base64);
                         
                         if(db && user) {
@@ -451,7 +447,7 @@
                                 const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'global');
                                 await setDoc(docRef, { logoUrl: base64 }, { merge: true });
                                 showToast("Logo Saved & Updated!");
-                            } catch(err) { console.error(err); showToast("Error saving logo (File too large for DB)"); }
+                            } catch(err) { console.error(err); showToast("Error saving logo"); }
                         }
                     }
                 }
@@ -478,7 +474,6 @@
             document.getElementById('appleTouchIcon').href = url;
         }
 
-        // --- APP LOGIC ---
         window.addEventListener('DOMContentLoaded', () => {
             const yearSpan = document.getElementById('copyrightYear');
             const schoolYearSpan = document.getElementById('schoolYear');
@@ -500,7 +495,11 @@
                 const val = e.target.value;
                 if(!val) return;
                 const day = new Date(val).getDay();
-                if (day === 0 || day === 6) { alert("Please select a weekday (Monday - Friday)."); e.target.value = currentDate; return; }
+                if (day === 0 || day === 6) { 
+                    showToast("Select a weekday (Mon-Fri)"); 
+                    e.target.value = currentDate; 
+                    return; 
+                }
                 currentDate = val;
                 document.getElementById('displayDate').textContent = formatDate(currentDate);
                 loadDataForView();
@@ -509,9 +508,8 @@
             initFirebase();
         });
 
-        // --- AUTO SAVE ---
         window.autoSave = function() {
-            if(currentDept === 'secondary') renderTable();
+            if(currentDept === 'secondary' || currentDept === 'primary') renderTable();
             else window.updateFormCalc();
 
             clearTimeout(saveTimeout);
@@ -522,26 +520,22 @@
 
         window.saveCurrentData = async function(isManual = true) {
             try {
-                if (currentDept === 'secondary') {
-                    await saveRecord(currentDate, 'secondary', tableData, teacherData);
-                } else if (currentDept === 'primary') {
-                    await saveRecord(currentDate, 'primary', primaryStats, null);
+                if (currentDept === 'secondary' || currentDept === 'primary') {
+                    await saveRecord(currentDate, currentDept, tableData, teacherData);
                 } else {
                     await saveRecord(currentDate, 'kindergarten', kindergartenStats, null);
                 }
                 showToast(isManual ? "Data saved successfully!" : "Changes saved");
-            } catch (e) { console.error(e); if(isManual) showToast("Error saving data (Check Config)."); }
+            } catch (e) { console.error(e); if(isManual) showToast("Error saving data"); }
         }
 
         window.updateRow = function(type, index, field, value) {
             const arr = type === 'student' ? tableData : teacherData;
-            
             if (field === 'remarks' || field === 'name') {
                 arr[index][field] = value;
             } else {
                 arr[index][field] = parseInt(value) || 0;
             }
-            
             renderTable();
             window.autoSave(); 
         }
@@ -556,7 +550,6 @@
             const formView = document.getElementById('formViewWrapper');
             const primaryActions = document.getElementById('primaryActions');
 
-            // Reset Styles
             const activeStyle = "flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all bg-white shadow text-emerald-700 lao-text";
             const inactiveStyle = "flex-1 py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition-all hover:bg-gray-200 lao-text";
             
@@ -564,23 +557,27 @@
             primTab.className = inactiveStyle;
             kinTab.className = inactiveStyle;
 
-            if (dept === 'secondary') {
-                secTab.className = activeStyle;
+            if (dept === 'secondary' || dept === 'primary') {
+                if(dept === 'secondary') secTab.className = activeStyle;
+                else primTab.className = activeStyle;
+                
                 tableView.classList.remove('hidden');
                 formView.classList.add('hidden');
-                primaryActions.classList.remove('hidden'); // Show table actions (Save/Print)
-            } else {
-                if (dept === 'primary') primTab.className = activeStyle;
-                else kinTab.className = activeStyle;
+                primaryActions.classList.remove('hidden'); 
                 
+                const tableTitle = document.getElementById('tableTitle');
+                const deptName = dept === 'primary' ? 'ປະຖົມ' : 'ມັດທະຍົມ';
+                const sySpan = document.getElementById('schoolYear').outerHTML;
+                tableTitle.innerHTML = `ສະຖິຕິການມາຂາດຂອງນັກຮຽນ ${deptName} ສົກ ${sySpan}`;
+                
+            } else {
+                kinTab.className = activeStyle;
                 tableView.classList.add('hidden');
                 formView.classList.remove('hidden');
-                primaryActions.classList.add('hidden'); // Hide table actions, form has copy button
+                primaryActions.classList.add('hidden'); 
                 
-                // Update Form Title
                 const formTitle = document.getElementById('formTitleLao');
-                if(dept === 'primary') formTitle.innerText = "ປ້ອນຂໍ້ມູນ ປະຖົມ (Primary)";
-                else formTitle.innerText = "ປ້ອນຂໍ້ມູນ ອະນຸບານ (Kindergarten)";
+                formTitle.innerText = "ປ້ອນຂໍ້ມູນ ອະນຸບານ (Kindergarten)";
             }
             loadDataForView();
         }
@@ -599,17 +596,12 @@
             document.getElementById('form_stu_present').value = stuPresent;
             document.getElementById('form_tea_present').value = teaPresent;
 
-            const newStats = { stuTotal, stuAbsent, teaTotal, teaAbsent, remarks };
-            
-            if(currentDept === 'primary') primaryStats = newStats;
-            else kindergartenStats = newStats;
+            kindergartenStats = { stuTotal, stuAbsent, teaTotal, teaAbsent, remarks };
 
             const dateStr = formatDateShort(currentDate);
             const percent = stuTotal > 0 ? ((stuPresent / stuTotal) * 100).toFixed(1) + '%' : '0%';
-            
-            const deptName = currentDept === 'primary' ? 'ປະຖົມ (Primary)' : 'ອະນຸບານ (Kindergarten)';
+            const deptName = 'ອະນຸບານ (Kindergarten)';
 
-            // PREVIEW TEXT FORMAT
             const reportHTML = `Neerada Chommany School Attendance / ໂຮງຮຽນ ນີຣະດາ ຈອມມະນີ
 📅 Date / ວັນທີ: ${dateStr} (${deptName})
 ------------------
@@ -628,7 +620,6 @@
             document.getElementById('formReportText').innerText = reportHTML;
         }
 
-        // Helper: Format Date
         function formatDate(dateStr) {
             const d = new Date(dateStr);
             const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -639,7 +630,6 @@
             return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
         }
 
-        // Helper: Render Table (Secondary)
         function renderTable() {
             const tbody = document.getElementById('attendanceTableBody');
             tbody.innerHTML = '';
@@ -668,7 +658,6 @@
                 tbody.appendChild(tr);
             });
 
-            // Teachers
             const teacherBody = document.getElementById('teacherTableBody');
             teacherBody.innerHTML = '';
             teacherData.forEach((row, index) => {
@@ -692,7 +681,6 @@
                 `;
             });
 
-            // Student Summary Row 
             const percentStudents = liveStats.students.total > 0 ? ((liveStats.students.present / liveStats.students.total) * 100).toFixed(1) : 0;
             document.getElementById('studentTotalBody').innerHTML = `
                 <tr class="bg-emerald-100 font-bold text-gray-900">
@@ -704,7 +692,6 @@
                 </tr>
             `;
 
-            // Teacher Summary Row
             const percentTeachers = liveStats.teachers.total > 0 ? ((liveStats.teachers.present / liveStats.teachers.total) * 100).toFixed(1) : 0;
             document.getElementById('teacherTotalBody').innerHTML = `
                 <tr class="bg-blue-100 font-bold text-gray-900">
@@ -726,7 +713,6 @@
             const dateStr = formatDateShort(currentDate);
             const percent = liveStats.students.total > 0 ? ((liveStats.students.present / liveStats.students.total) * 100).toFixed(1) + '%' : '0%';
             
-            // Gather Teacher Remarks
             let teacherRemarks = [];
             teacherData.forEach(t => {
                 if(t.remarks && t.remarks.trim() !== '') {
@@ -736,9 +722,10 @@
             });
             const remarksStr = teacherRemarks.length > 0 ? teacherRemarks.join(', ') : '= ມາທັງໝົດ';
 
-            // PREVIEW TEXT FORMAT FOR TABLE
+            const deptLao = currentDept === 'primary' ? 'ປະຖົມ' : 'ມັດທະຍົມ';
+
             const text = `Neerada Chommany School Attendance / ໂຮງຮຽນ ນີຣະດາ ຈອມມະນີ
-📅 Date / ວັນທີ: ${dateStr} (ມັດທະຍົມ)
+📅 Date / ວັນທີ: ${dateStr} (${deptLao})
 ------------------
 🎓 Students / ນັກຮຽນ:
 👥 Total / ທັງໝົດ: ${liveStats.students.total}
@@ -893,10 +880,11 @@
         }
 
         function showToast(msg) {
-            const t = document.getElementById('toast'); t.textContent = msg; t.classList.remove('translate-y-20', 'opacity-0');
+            const t = document.getElementById('toast'); 
+            t.textContent = msg; 
+            t.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
     </script>
 </body>
-
 </html>
